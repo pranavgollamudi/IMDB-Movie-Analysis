@@ -13,6 +13,9 @@ body,
 	align-items: center;
 }
 
+.svg-content-responsive {
+	width: 80%;
+}
 
 /*--- delete this class ---*/
 #chartFilmChart {

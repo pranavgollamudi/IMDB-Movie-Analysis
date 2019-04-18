@@ -1,23 +1,26 @@
 const C = {
-	height: 600,
+	height: 500,
 	width: 800,
-	padding: 30,
+	padding: 35,
 	chartFilm: {
 		id: 'chartFilmChart',
-		height: 200,
+		height: 180,
 	},
 	durationChart: {
 		id: 'durationChart',
-		height: 200,
-		width: 300,
+		height: 280,
+		width: 400,
 	}
 }
 
 const container = d3.select('#root')
 
 const svg = container.append('svg')
-	.attr('height', C.height)
-	.attr('width', C.width)
+	.attr('class', 'svg-content-responsive')
+	// .attr('height', C.height)
+	// .attr('width', C.width)
+	.attr('preserveAspectRatio', 'xMinYMin meet')
+	.attr('viewBox', `0 0 ${C.width} ${C.height}`)
 	.attr("font-size", 10)
 	.attr("font-family", "sans-serif")
 	.attr("text-anchor", "middle");
@@ -37,19 +40,21 @@ function drawDurationChart(data) {
 	const width = C.durationChart.width,
 		height = C.durationChart.height
 
-	const chartFilm = svg.append('g')
+	const color = d3.scaleOrdinal(data.map(d => d.Movie), d3.schemeCategory10)
+
+	const chartDuration = svg.append('g')
 		.attr('id', C.durationChart.id)
-		.attr("transform", "translate(" + C.padding + "," + C.padding + ")")
+		//.attr("transform", "translate(" + C.padding + "," + C.padding + ")")
 
 	const bubble = d3.pack(dataset)
-		.size([width - 2, height - 2])
+		.size([width, height])
 		.padding(1.5)
 
 	const nodes = d3.hierarchy(dataset)
 		.sum(d => d.Duration)
 
-	console.log(bubble(nodes).descendants())
-	const node = chartFilm.selectAll(".node")
+	// bubbles
+	const node = chartDuration.selectAll(".node")
 		.data(bubble(nodes).descendants())
 		.enter()
 		.filter(function(d){
@@ -61,12 +66,26 @@ function drawDurationChart(data) {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
 
-	node.append("title")
-		.text(d => d.Movie);
-
 	node.append("circle")
-		.attr("r", d => 10)
-		.style("fill", 'blue')
+		.attr("r", d => d.r)
+		.style("fill", d => color(d.data.Movie))
+
+	// header, title
+	node.append("text")
+		.attr("dy", ".2em")
+		.style("text-anchor", "middle")
+		.text(d => d.data.Duration )
+		.attr("font-family", "sans-serif")
+		.attr("font-size", d => d.r/2)
+		.attr("fill", "white")
+
+	node.append("text")
+		.attr("dy", "1.3em")
+		.style("text-anchor", "middle")
+		.text('min')
+		.attr("font-family", "sans-serif")
+		.attr("font-size", d => d.r/2)
+		.attr("fill", "white")
 }
 
 function drawFilmChart(data) {
@@ -86,7 +105,7 @@ function drawFilmChart(data) {
 		.range([height - C.padding, 0])
 		.domain(d3.extent(data, d => parseInt(d.Year)))
 
-	const color = d3.scaleOrdinal(data.map(d => d.Rating), d3.schemeCategory10)
+	const color = d3.scaleOrdinal(data.map(d => d.Movie), d3.schemeCategory10)
 
 	// -- axis ---
 	const axisX = d3.axisBottom(xScale)
@@ -117,7 +136,7 @@ function drawFilmChart(data) {
 		.attr('cx', (d) => xScale(d.Rating))
 		.attr('cy', (d) => yScale(d.Year))
 		.attr('r', 7)
-		.attr('fill', d => color(d.Rating))
+		.attr('fill', d => color(d.Movie))
 
 
 }
