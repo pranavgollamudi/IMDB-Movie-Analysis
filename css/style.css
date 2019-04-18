@@ -17,7 +17,20 @@ body,
 	width: 80%;
 }
 
-/*--- delete this class ---*/
-#chartFilmChart {
-	border: 1px solid red;
+.arc.selected,
+.arc:hover {
+	transform: scale(1.2);
+	z-index: 10;
 }
+
+.rect.selected,
+.rect:hover {
+	fill: aqua;
+	box-shadow: 3px 3px 5px 6px #ccc;
+}
+
+.axisX .tick text {
+	transform: rotate(-30deg);
+	display: none;
+}
+/*--- delete this class ---*/
