@@ -15,10 +15,23 @@ const C = {
 		id: 'directorChart',
 		height: 240,
 		width: 365,
-	}
+	},
+	colors: [
+		'#a50026',
+		'#d73027',
+		'#f46d43',
+		'#fdae61',
+		'#fee08b',
+		'#d9ef8b',
+		'#a6d96a',
+		'#66bd63',
+		'#1a9850',
+		'#006837',
+	]
 }
 
-const container = d3.select('#root')
+const container = d3.select('#root'),
+	tooltipCont = d3.select('#tooltip')
 
 let globalData
 
@@ -28,7 +41,19 @@ const svg = container.append('svg')
 	.attr('viewBox', `0 0 ${C.width} ${C.height}`)
 	.attr("font-size", 10)
 	.attr("font-family", "sans-serif")
-	.attr("text-anchor", "middle");
+	.attr("text-anchor", "middle")
+	.on('click', function (e) {
+		const targetTagName = d3.event.target.tagName
+
+		if (targetTagName !== 'svg')
+			return
+
+		svg.selectAll('.selected')
+			.classed('selected', false)
+
+		svg.selectAll('.rect, .node, .arc')
+			.classed('hide', false)
+	})
 
 d3.text('data/data1.csv').then(response => {
 	const data = d3.csvParse(response)
@@ -75,10 +100,14 @@ function drawDirectorChart(data) {
 		.on('click', function (e) {
 			/*-- select / deselect item*/
 			d3.selectAll('.selected')
-				.classed("selected", false);
+				.classed("selected", false)
+
+			d3.selectAll('.node, .rect, .arc')
+				.classed("hide", true)
 
 			d3.select(this)
-				.attr('class', 'arc selected')
+				.classed("selected", true)
+				.classed("hide", false)
 
 			const pieChart = d3.select('#'+C.directorChart.id),
 				angle = 270 - (e.startAngle + e.endAngle) / 2 * 180 / Math.PI
@@ -95,11 +124,18 @@ function drawDirectorChart(data) {
 				)
 
 			movies.forEach(movie => {
-				//deselet movie
+				//deselect movie
 
 				const movieID = getIdByName(movie.Movie)
 				d3.select('#'+movieID)
-					.attr('class', 'rect selected')
+					.classed("selected", true)
+					.classed("hide", false)
+
+				const durationID = getIdByName(movie.Duration)
+				d3.select('#'+durationID)
+					.classed("selected", true)
+					.classed("hide", false)
+
 			})
 		})
 
@@ -185,7 +221,7 @@ function drawFilmChart(data) {
 		.attr("transform", "translate(" + C.padding + "," + (C.height - height - C.padding) + ")")
 
 	const xScale = d3.scaleBand()
-			.range([0, width - C.padding])
+			.range([0, width - C.padding*2])
 			.domain(data.map(d => d.Movie))
 			.padding(0.1)
 
@@ -221,7 +257,7 @@ function drawFilmChart(data) {
 
 	//-- circle --
 
-	chartFilm.selectAll('dot')
+	chartFilm.selectAll('rect')
 		.data(data)
 		.enter()
 		.append("rect")
@@ -232,6 +268,30 @@ function drawFilmChart(data) {
 		.attr("width", xScale.bandwidth())
 		.attr("height", d => yScale(minY) - yScale(d.Rating))
 		.attr('fill', d => color(d.Movie))
+		.on("mousemove", function(e) {
+			const title = e.Movie,
+				year = e.Year,
+				actor = e.Actor,
+				language = e.Language,
+				html = `
+					<div>
+						<span>${title},</span><br>
+						<span>${year},</span><br>
+						<span>${actor},</span><br>
+						<span>${language},</span><br>
+					</div>
+				`
+
+			tooltipCont.html(html)
+				.style("top", (d3.event.screenY-50) + "px")
+				.style("left", (d3.event.screenX ) + "px")
+				.style("display", "flex");
+
+
+		})
+		.on("mouseout", function() {
+			tooltipCont.style("display", "none");
+		})
 }
 
 /* helper functions */
@@ -248,7 +308,7 @@ function unique (arr) {
 
 function getIdByName (name) {
 	//remove space, (,),? and add random number
-	const id = 'i' + name.replace(/\s|\(|\)|\?/g, '', '')
+	const id = 'i' + name.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&/g, '', '')
 	return id
 }
 
