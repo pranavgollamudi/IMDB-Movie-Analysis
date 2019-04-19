@@ -35,16 +35,31 @@ body,
 	transform: scale(1.2);
 	opacity: 1;
 }
+.arc.selected path,
+.arc:hover path {
+	stroke-width: 2px;
+	stroke: black;
+}
+
+.node.selected circle,
+.node.selected text,
+.node:hover circle,
+.node:hover text {
+	opacity: 1;
+	transform: scale(1.3);
+}
 
 .node.selected circle,
 .node:hover circle {
-	opacity: 1;
-	transform: scale(1.3);
+	stroke-width: 2px;
+	stroke: black;
 }
 
 .rect.selected,
 .rect:hover {
 	opacity: 1;
+	stroke-width: 2px;
+	stroke: black;
 }
 
 .axisX .tick text {
