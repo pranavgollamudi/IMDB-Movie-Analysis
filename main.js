@@ -216,24 +216,28 @@ function drawFilmChart(data) {
 	const width = C.width,
 		height = C.chartFilm.height
 
+	const sortedData = data.sort((a, b) => {
+		return  +b.Rating - +a.Rating
+	})
+
+
 	const chartFilm = svg.append('g')
 		.attr('id', C.chartFilm.id)
 		.attr("transform", "translate(" + C.padding + "," + (C.height - height - C.padding) + ")")
 
 	const xScale = d3.scaleBand()
 			.range([0, width - C.padding*2])
-			.domain(data.map(d => d.Movie))
+			.domain(sortedData.map(d => d.Movie))
 			.padding(0.1)
 
-
-	const xExtent = d3.extent(data, d => parseFloat(d.Rating)),
+	const xExtent = d3.extent(sortedData, d => parseFloat(d.Rating)),
 		minY = xExtent[0]-1 < 0 ? 0 : xExtent[0]-1,
 		maxY = xExtent[1]+1 > 10 ? 10 : xExtent[1]+1,
 		yScale = d3.scaleLinear()
 		.range([height - C.padding, 0])
 		.domain([minY, maxY])
 
-	const color = d3.scaleOrdinal(data.map(d => d.Movie), d3.schemeCategory10)
+	const color = d3.scaleOrdinal(sortedData.map(d => d.Movie), d3.schemeCategory10)
 
 	// -- axis ---
 	const axisX = d3.axisBottom(xScale)
@@ -258,7 +262,7 @@ function drawFilmChart(data) {
 	//-- circle --
 
 	chartFilm.selectAll('rect')
-		.data(data)
+		.data(sortedData)
 		.enter()
 		.append("rect")
 		.attr('id', d => getIdByName(d.Movie))
@@ -292,6 +296,56 @@ function drawFilmChart(data) {
 		.on("mouseout", function() {
 			tooltipCont.style("display", "none");
 		})
+		.on('click', function (e) {
+			/*-- select / deselect item*/
+			d3.selectAll('.selected')
+				.classed("selected", false)
+
+			d3.selectAll('.node, .rect, .arc')
+				.classed("hide", true)
+
+			d3.select(this)
+				.classed("selected", true)
+				.classed("hide", false)
+
+
+			/*-- select / deselect reletion --*/
+			const movieName = e.Movie,
+				movies = globalData.filter(d =>
+					d.Movie === movieName
+				)
+
+			movies.forEach(movie => {
+				//deselect movie
+
+				//director select
+				const directorID = getIdByName(movie.Director),
+					directorNode = d3.select('#'+directorID),
+					directorData = directorNode.data()[0]
+
+				directorNode
+					.classed("selected", true)
+					.classed("hide", false)
+
+				const pieChart = d3.select('#'+C.directorChart.id),
+					startAngle = directorData.startAngle,
+					endAngle = directorData.endAngle,
+					angle = 270 - (startAngle + endAngle) / 2 * 180 / Math.PI
+
+				pieChart
+					.transition()
+					.duration(750)
+					.attr('transform', `rotate(${angle})`)
+				
+				//duration select
+				const durationID = getIdByName(movie.Duration)
+				d3.select('#'+durationID)
+					.classed("selected", true)
+					.classed("hide", false)
+
+			})
+		})
+
 }
 
 /* helper functions */
