@@ -289,17 +289,11 @@ function drawFilmChart(data) {
 
 	// -- axis ---
 	const axisX = d3.axisBottom(xScale)
-			.ticks(null, 's'),
+			.ticks(null, 's')
+			// .tickSize(1)
 
 		axisY = d3.axisLeft(yScale)
 			.tickFormat(d3.format(".0f"))
-
-	chartFilm.append("g")
-		.attr("class", "axisX")
-		.attr("transform", `translate(${0},${height - C.padding})`)
-		.transition()
-		.duration(750)
-		.call(axisX)
 
 	chartFilm.append("g")
 		.attr("class", "axisY")
@@ -321,16 +315,19 @@ function drawFilmChart(data) {
 		.attr("height", d => yScale(minY) - yScale(d.Rating))
 		.attr('fill', d => color(d.Movie))
 		.on("mousemove", function(e) {
-			const title = e.Movie,
-				year = e.Year,
-				actor = e.Actor,
-				language = e.Language,
+			const {
+				Movie,
+				Year,
+				Actor,
+				Language,
+				Duration } = e,
 				html = `
 					<div>
-						<span>${title},</span><br>
-						<span>${year},</span><br>
-						<span>${actor},</span><br>
-						<span>${language},</span><br>
+						<span>${Movie},</span>
+						<span> ${Duration} min,</span><br>
+						<span>${Year},</span><br>
+						<span>${Actor},</span><br>
+						<span>${Language},</span><br>
 					</div>
 				`
 
@@ -394,6 +391,12 @@ function drawFilmChart(data) {
 			})
 		})
 
+	chartFilm.append("g")
+		.attr("class", "axisX")
+		.attr("transform", `translate(${0},${height - C.padding})`)
+		.transition()
+		.duration(750)
+		.call(axisX)
 }
 
 /* helper functions */

@@ -15,7 +15,7 @@ body,
 
 .svg-content-responsive {
 	width: 100%;
-	max-width: 1200px;
+	max-width: 1100px;
 }
 
 .arc,
@@ -48,7 +48,8 @@ body,
 }
 
 .axisX .tick text {
-	transform: rotate(-30deg);
+	transform: rotate(-90deg) translate(5px, -15px);
+	text-anchor: start;
 	display: none;
 }
 
