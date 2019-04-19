@@ -15,6 +15,7 @@ body,
 
 .svg-content-responsive {
 	width: 100%;
+	max-width: 1200px;
 }
 
 .arc,

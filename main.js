@@ -189,6 +189,54 @@ function drawDurationChart(data) {
 		.attr("transform", function(d) {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
+		.on('click', function (e) {
+			/*-- select / deselect item*/
+			d3.selectAll('.selected')
+				.classed("selected", false)
+
+			d3.selectAll('.node, .rect, .arc')
+				.classed("hide", true)
+
+			d3.select(this)
+				.classed("selected", true)
+				.classed("hide", false)
+
+			/*-- select / deselect reletion --*/
+			const duration = +e.data,
+				movies = globalData.filter(d =>
+					+d.Duration === duration
+				)
+
+			movies.forEach(movie => {
+				//deselect movie
+
+				//director select
+				const directorID = getIdByName(movie.Director),
+					directorNode = d3.select('#'+directorID),
+					directorData = directorNode.data()[0]
+
+				directorNode
+					.classed("selected", true)
+					.classed("hide", false)
+
+				const pieChart = d3.select('#'+C.directorChart.id),
+					startAngle = directorData.startAngle,
+					endAngle = directorData.endAngle,
+					angle = 270 - (startAngle + endAngle) / 2 * 180 / Math.PI
+
+				pieChart
+					.transition()
+					.duration(750)
+					.attr('transform', `rotate(${angle})`)
+
+				//movie select
+				const movieID = getIdByName(movie.Movie)
+				d3.select('#'+movieID)
+					.classed("selected", true)
+					.classed("hide", false)
+
+			})
+		})
 
 	node.append("circle")
 		.attr("r", d => d.r)
@@ -336,7 +384,7 @@ function drawFilmChart(data) {
 					.transition()
 					.duration(750)
 					.attr('transform', `rotate(${angle})`)
-				
+
 				//duration select
 				const durationID = getIdByName(movie.Duration)
 				d3.select('#'+durationID)
@@ -362,7 +410,7 @@ function unique (arr) {
 
 function getIdByName (name) {
 	//remove space, (,),? and add random number
-	const id = 'i' + name.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&/g, '', '')
+	const id = 'i' + name.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 	return id
 }
 
