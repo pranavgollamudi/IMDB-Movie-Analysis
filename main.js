@@ -98,45 +98,25 @@ function drawDirectorChart(data) {
 		.attr('class', 'arc')
 		.attr('id', d => getIdByName(d.data))
 		.on('click', function (e) {
-			/*-- select / deselect item*/
-			d3.selectAll('.selected')
-				.classed("selected", false)
+			//what already select?
+			const alreadySelected = d3.selectAll('.selected.arc')
+				.data()
+				.map(d => d.data)
 
-			d3.selectAll('.node, .rect, .arc')
-				.classed("hide", true)
-
-			d3.select(this)
-				.classed("selected", true)
-				.classed("hide", false)
-
-			const pieChart = d3.select('#'+C.directorChart.id),
-				angle = 270 - (e.startAngle + e.endAngle) / 2 * 180 / Math.PI
-
-			pieChart
-				.transition()
-				.duration(750)
-				.attr('transform', `rotate(${angle})`)
-
-			/*-- select / deselect reletion --*/
+			//that node already selected?
 			const directorName = e.data,
-				movies = globalData.filter(d =>
-					d.Director === directorName
-				)
+				include = alreadySelected.indexOf(directorName),
+				willSelect = (include < 0) ?
+					alreadySelected.concat(directorName) :
+					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
-			movies.forEach(movie => {
-				//deselect movie
 
-				const movieID = getIdByName(movie.Movie)
-				d3.select('#'+movieID)
-					.classed("selected", true)
-					.classed("hide", false)
+			const movies = globalData.filter(d =>
+				willSelect.includes(d.Director)
+			)
 
-				const durationID = getIdByName(movie.Duration)
-				d3.select('#'+durationID)
-					.classed("selected", true)
-					.classed("hide", false)
-
-			})
+			/*-- select --*/
+			selectMovie(movies)
 		})
 
 	pieChart.append('path')
@@ -190,52 +170,25 @@ function drawDurationChart(data) {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
 		.on('click', function (e) {
-			/*-- select / deselect item*/
-			d3.selectAll('.selected')
-				.classed("selected", false)
+			//what already select?
+			const alreadySelected = d3.selectAll('.selected.node')
+				.data()
+				.map(d => d.data)
 
-			d3.selectAll('.node, .rect, .arc')
-				.classed("hide", true)
+			//that node already selected?
+			const duration = e.data,
+				include = alreadySelected.indexOf(duration),
+				willSelect = (include < 0) ?
+					alreadySelected.concat(duration) :
+					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
-			d3.select(this)
-				.classed("selected", true)
-				.classed("hide", false)
 
-			/*-- select / deselect reletion --*/
-			const duration = +e.data,
-				movies = globalData.filter(d =>
-					+d.Duration === duration
-				)
+			const movies = globalData.filter(d =>
+				willSelect.includes(d.Duration)
+			)
 
-			movies.forEach(movie => {
-				//deselect movie
-
-				//director select
-				const directorID = getIdByName(movie.Director),
-					directorNode = d3.select('#'+directorID),
-					directorData = directorNode.data()[0]
-
-				directorNode
-					.classed("selected", true)
-					.classed("hide", false)
-
-				const pieChart = d3.select('#'+C.directorChart.id),
-					startAngle = directorData.startAngle,
-					endAngle = directorData.endAngle,
-					angle = 270 - (startAngle + endAngle) / 2 * 180 / Math.PI
-
-				pieChart
-					.transition()
-					.duration(750)
-					.attr('transform', `rotate(${angle})`)
-
-				//movie select
-				const movieID = getIdByName(movie.Movie)
-				d3.select('#'+movieID)
-					.classed("selected", true)
-					.classed("hide", false)
-
-			})
+			/*-- select --*/
+			selectMovie(movies)
 		})
 
 	node.append("circle")
@@ -289,9 +242,8 @@ function drawFilmChart(data) {
 
 	// -- axis ---
 	const axisX = d3.axisBottom(xScale)
-			.ticks(null, 's')
+			.ticks(null, 's'),
 			// .tickSize(1)
-
 		axisY = d3.axisLeft(yScale)
 			.tickFormat(d3.format(".0f"))
 
@@ -332,8 +284,8 @@ function drawFilmChart(data) {
 				`
 
 			tooltipCont.html(html)
-				.style("top", (d3.event.screenY-50) + "px")
-				.style("left", (d3.event.screenX ) + "px")
+				.style("top", (d3.event.pageY+30) + "px")
+				.style("left", (d3.event.pageX+10 ) + "px")
 				.style("display", "flex");
 
 
@@ -342,53 +294,23 @@ function drawFilmChart(data) {
 			tooltipCont.style("display", "none");
 		})
 		.on('click', function (e) {
-			/*-- select / deselect item*/
-			d3.selectAll('.selected')
-				.classed("selected", false)
+			//what already select?
+			const alreadySelected = d3.selectAll('.selected.rect')
+				.data()
+				.map(d => d.Movie)
 
-			d3.selectAll('.node, .rect, .arc')
-				.classed("hide", true)
-
-			d3.select(this)
-				.classed("selected", true)
-				.classed("hide", false)
-
-
-			/*-- select / deselect reletion --*/
+			//that node already selected?
 			const movieName = e.Movie,
-				movies = globalData.filter(d =>
-					d.Movie === movieName
-				)
+				include = alreadySelected.indexOf(movieName),
+				willSelect = (include < 0) ?
+					alreadySelected.concat(movieName) :
+					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
-			movies.forEach(movie => {
-				//deselect movie
+			const movies = globalData.filter(d =>
+				willSelect.includes(d.Movie)
+			)
 
-				//director select
-				const directorID = getIdByName(movie.Director),
-					directorNode = d3.select('#'+directorID),
-					directorData = directorNode.data()[0]
-
-				directorNode
-					.classed("selected", true)
-					.classed("hide", false)
-
-				const pieChart = d3.select('#'+C.directorChart.id),
-					startAngle = directorData.startAngle,
-					endAngle = directorData.endAngle,
-					angle = 270 - (startAngle + endAngle) / 2 * 180 / Math.PI
-
-				pieChart
-					.transition()
-					.duration(750)
-					.attr('transform', `rotate(${angle})`)
-
-				//duration select
-				const durationID = getIdByName(movie.Duration)
-				d3.select('#'+durationID)
-					.classed("selected", true)
-					.classed("hide", false)
-
-			})
+			selectMovie(movies)
 		})
 
 	chartFilm.append("g")
@@ -411,9 +333,65 @@ function unique (arr) {
 	return Object.keys(obj)
 }
 
+function selectMovie (movies = []) {
+	/*-deselect and hide all*/
+	d3.selectAll('.selected')
+		.classed("selected", false)
+
+	d3.selectAll('.node, .rect, .arc')
+		.classed("hide", true)
+
+	/*-- select --*/
+	movies.forEach(movie => {
+
+		//movie select
+		const movieID = getIdByName(movie.Movie)
+		d3.select('#'+movieID)
+			.classed("selected", true)
+			.classed("hide", false)
+
+		//director select
+		const directorID = getIdByName(movie.Director),
+			directorNode = d3.select('#'+directorID),
+			directorData = directorNode.data()[0]
+
+		directorNode
+			.classed("selected", true)
+			.classed("hide", false)
+
+		const pieChart = d3.select('#'+C.directorChart.id),
+			startAngle = directorData.startAngle,
+			endAngle = directorData.endAngle,
+			angle = 270 - (startAngle + endAngle) / 2 * 180 / Math.PI
+
+		pieChart
+			.transition()
+			.duration(750)
+			.attr('transform', `rotate(${angle})`)
+
+		//duration select
+		const durationID = getIdByName(movie.Duration)
+		d3.select('#'+durationID)
+			.classed("selected", true)
+			.classed("hide", false)
+
+	})
+}
+
 function getIdByName (name) {
 	//remove space, (,),? and add random number
 	const id = 'i' + name.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 	return id
+}
+
+function makeAbsoluteContext(element, svgDocument) {
+	return function(x,y) {
+		var offset = svgDocument.getBoundingClientRect();
+		var matrix = element.getScreenCTM();
+		return {
+			x: (matrix.a * x) + (matrix.c * y) + matrix.e - offset.left,
+			y: (matrix.b * x) + (matrix.d * y) + matrix.f - offset.top
+		};
+	};
 }
 
