@@ -8,8 +8,8 @@ const C = {
 	},
 	durationChart: {
 		id: 'durationChart',
-		height: 280,
-		width: 400,
+		height: 320,
+		width: 450,
 	},
 	directorChart: {
 		id: 'directorChart',
@@ -33,7 +33,8 @@ const C = {
 const container = d3.select('#root'),
 	tooltipCont = d3.select('#tooltip')
 
-let globalData
+let globalData,
+	hideMode = true
 
 const svg = container.append('svg')
 	.attr('class', 'svg-content-responsive')
@@ -53,6 +54,7 @@ const svg = container.append('svg')
 
 		svg.selectAll('.rect, .node, .arc')
 			.classed('hide', false)
+			.classed('transparent', false)
 	})
 
 d3.text('data/data1.csv').then(response => {
@@ -151,7 +153,7 @@ function drawDurationChart(data) {
 
 	const bubble = d3.pack(dataset)
 		.size([width, height])
-		.padding(1.5)
+		.padding(10)
 
 	const nodes = d3.hierarchy(dataset)
 		.sum(d => d)
@@ -181,7 +183,6 @@ function drawDurationChart(data) {
 				willSelect = (include < 0) ?
 					alreadySelected.concat(duration) :
 					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
-
 
 			const movies = globalData.filter(d =>
 				willSelect.includes(d.Duration)
@@ -255,10 +256,12 @@ function drawFilmChart(data) {
 
 	//-- circle --
 
-	chartFilm.selectAll('rect')
+	const rectCont = chartFilm.selectAll('rect')
 		.data(sortedData)
 		.enter()
-		.append("rect")
+		.append("g")
+
+	rectCont.append("rect")
 		.attr('id', d => getIdByName(d.Movie))
 		.attr('class', "rect")
 		.attr("x", d => xScale(d.Movie))
@@ -313,6 +316,19 @@ function drawFilmChart(data) {
 			selectMovie(movies)
 		})
 
+	rectCont.append('text')
+		.attr('class', 'movieName')
+		.attr("transform", d => "translate(" + (xScale(d.Movie) + 8) + "," + (yScale(minY) + 12) + ") rotate(-30)")
+		.text(d => {
+			let result = d.Movie
+			if (d.Movie.length > 20) {
+				result = d.Movie.slice(0,17) + '...'
+			}
+
+			return result
+		})
+
+
 	chartFilm.append("g")
 		.attr("class", "axisX")
 		.attr("transform", `translate(${0},${height - C.padding})`)
@@ -339,7 +355,8 @@ function selectMovie (movies = []) {
 		.classed("selected", false)
 
 	d3.selectAll('.node, .rect, .arc')
-		.classed("hide", true)
+		.classed("hide", true && hideMode)
+		.classed('transparent', true)
 
 	/*-- select --*/
 	movies.forEach(movie => {
@@ -349,6 +366,7 @@ function selectMovie (movies = []) {
 		d3.select('#'+movieID)
 			.classed("selected", true)
 			.classed("hide", false)
+			.classed('transparent', false)
 
 		//director select
 		const directorID = getIdByName(movie.Director),
@@ -358,6 +376,7 @@ function selectMovie (movies = []) {
 		directorNode
 			.classed("selected", true)
 			.classed("hide", false)
+			.classed('transparent', false)
 
 		const pieChart = d3.select('#'+C.directorChart.id),
 			startAngle = directorData.startAngle,
@@ -374,6 +393,7 @@ function selectMovie (movies = []) {
 		d3.select('#'+durationID)
 			.classed("selected", true)
 			.classed("hide", false)
+			.classed('transparent', false)
 
 	})
 }

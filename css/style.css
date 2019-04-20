@@ -16,7 +16,7 @@ body,
 
 .svg-content-responsive {
 	width: 100%;
-	max-width: 1100px;
+	max-width: 1000px;
 }
 
 .arc,
@@ -25,11 +25,22 @@ body,
 	opacity: .8;
 }
 
+.arc.transparent,
+.rect.transparent,
+.node.transparent circle {
+	opacity: 0.3;
+}
+
 .arc.hide,
 .rect.hide,
-.node.hide circle {
-	opacity: .3;
+.node.hide circle,
+.arc.hide:hover,
+.rect.hide:hover,
+.node.hide:hover circle{
+	opacity: 0;
 }
+
+
 
 .arc.selected,
 .arc:hover {
@@ -47,7 +58,7 @@ body,
 .node:hover circle,
 .node:hover text {
 	opacity: 1;
-	transform: scale(1.3);
+	transform: scale(1.5);
 }
 
 .node.selected circle,
@@ -61,6 +72,19 @@ body,
 	opacity: 1;
 	stroke-width: 2px;
 	stroke: black;
+}
+
+.rect + .movieName {
+	display: none;
+}
+.rect.selected + .movieName {
+	display: block;
+}
+.movieName {
+	text-anchor: end;
+	font-family: sans-serif;
+	font-size: 10px;
+	fill: black;
 }
 
 .axisX .tick text {
