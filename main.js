@@ -36,6 +36,26 @@ const container = d3.select('#root'),
 let globalData,
 	hideMode = true
 
+d3.select("#applyModeCheckbox")
+	.on("change", function (e) {
+		const targetTagName = d3.event.target
+		hideMode = targetTagName.checked
+
+		const selectedMovie = d3.selectAll('.selected.rect')
+			.data()
+			.map(d => d.Movie)
+
+		if (selectedMovie.length === 0)
+			return
+
+		const movies = globalData.filter(d =>
+			selectedMovie.includes(d.Movie)
+		)
+
+		selectMovie(movies)
+
+	})
+
 const svg = container.append('svg')
 	.attr('class', 'svg-content-responsive')
 	.attr('preserveAspectRatio', 'xMinYMin meet')
@@ -100,6 +120,9 @@ function drawDirectorChart(data) {
 		.attr('class', 'arc')
 		.attr('id', d => getIdByName(d.data))
 		.on('click', function (e) {
+			if (d3.select(this).classed('hide'))
+				return
+
 			//what already select?
 			const alreadySelected = d3.selectAll('.selected.arc')
 				.data()
@@ -172,6 +195,9 @@ function drawDurationChart(data) {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
 		.on('click', function (e) {
+			if (d3.select(this).classed('hide'))
+				return
+
 			//what already select?
 			const alreadySelected = d3.selectAll('.selected.node')
 				.data()
@@ -270,6 +296,9 @@ function drawFilmChart(data) {
 		.attr("height", d => yScale(minY) - yScale(d.Rating))
 		.attr('fill', d => color(d.Movie))
 		.on("mousemove", function(e) {
+			if (d3.select(this).classed('hide'))
+				return
+
 			const {
 				Movie,
 				Year,
@@ -297,6 +326,9 @@ function drawFilmChart(data) {
 			tooltipCont.style("display", "none");
 		})
 		.on('click', function (e) {
+			if (d3.select(this).classed('hide'))
+				return
+
 			//what already select?
 			const alreadySelected = d3.selectAll('.selected.rect')
 				.data()
