@@ -116,28 +116,31 @@ function useSlider(data) {
 			d.Duration < min || d.Duration > max
 		)
 
+		//display all
 		d3.selectAll('.notDisplay')
 			.classed("notDisplay", false)
 
 		movies.forEach(movie => {
 
-			//movie select
+			//movie hide
 			const movieID = getIdByName(movie.Movie)
 			d3.select('#'+movieID)
 				.classed("notDisplay", true)
 
-			//director select
-			// const directorID = getIdByName(movie.Director),
-			// 	directorNode = d3.select('#'+directorID),
-			// 	directorData = directorNode.data()[0]
-			//
-			// directorNode
-			// 	.classed("selected", true)
-			// 	.classed("hide", false)
-			// 	.classed('transparent', false)
+			//director hide
+			const allMivieDirector = globalData.filter(d =>
+				d.Director === movie.Director
+			)
+			const directorMovies = allMivieDirector.filter(d =>
+				d.Duration >= min && d.Duration <= max
+			)
+			if (directorMovies.length === 0) {
+				const directorID = getIdByName(movie.Director)
+				d3.select('#'+directorID)
+					.classed("notDisplay", true)
+			}
 
-
-			//duration select
+			//duration hide
 			const durationID = getIdByName(movie.Duration)
 			d3.select('#'+durationID)
 				.classed('notDisplay', true)

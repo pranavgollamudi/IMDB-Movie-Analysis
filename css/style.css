@@ -40,10 +40,6 @@ body,
 	opacity: 0;
 }
 
-.notDisplay {
-	display: none;
-}
-
 .arc.selected,
 .arc:hover {
 	transform: scale(1.2);
@@ -92,6 +88,13 @@ body,
 .axisX .tick text {
 	transform: rotate(-90deg) translate(5px, -15px);
 	text-anchor: start;
+	display: none;
+}
+
+.notDisplay,
+.rect.notDisplay + .movieName {
+	display: none;
+}{
 	display: none;
 }
 
