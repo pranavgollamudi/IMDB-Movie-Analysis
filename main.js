@@ -30,6 +30,8 @@ const C = {
 	]
 }
 
+
+
 const container = d3.select('#root'),
 	tooltipCont = d3.select('#tooltip')
 
@@ -83,7 +85,68 @@ d3.text('data/data1.csv').then(response => {
 	drawFilmChart(data)
 	drawDurationChart(data)
 	drawDirectorChart(data)
+	useSlider(data)
 })
+
+function useSlider(data) {
+	const durationData = unique(data.map(d => d.Duration)),
+		max = d3.max(data, d => +d.Duration),
+		min = d3.min(data, d => +d.Duration)
+
+	const slider = document.getElementById('slider')
+	noUiSlider.create(slider, {
+		start: [min, max],
+		connect: true,
+		range: {
+			'min': min,
+			'max': max
+		}
+	})
+	slider.noUiSlider.on('update', function () {
+		const fromNode = document.querySelector('#from'),
+			toNode = document.querySelector('#to')
+		const value = slider.noUiSlider.get(),
+			min = +value[0],
+			max = +value[1]
+
+		fromNode.innerText = min
+		toNode.innerText = max
+
+		const movies = globalData.filter(d =>
+			d.Duration < min || d.Duration > max
+		)
+
+		d3.selectAll('.notDisplay')
+			.classed("notDisplay", false)
+
+		movies.forEach(movie => {
+
+			//movie select
+			const movieID = getIdByName(movie.Movie)
+			d3.select('#'+movieID)
+				.classed("notDisplay", true)
+
+			//director select
+			// const directorID = getIdByName(movie.Director),
+			// 	directorNode = d3.select('#'+directorID),
+			// 	directorData = directorNode.data()[0]
+			//
+			// directorNode
+			// 	.classed("selected", true)
+			// 	.classed("hide", false)
+			// 	.classed('transparent', false)
+
+
+			//duration select
+			const durationID = getIdByName(movie.Duration)
+			d3.select('#'+durationID)
+				.classed('notDisplay', true)
+
+		})
+
+
+	})
+}
 
 function drawDirectorChart(data) {
 	const width = C.directorChart.width,

@@ -40,7 +40,9 @@ body,
 	opacity: 0;
 }
 
-
+.notDisplay {
+	display: none;
+}
 
 .arc.selected,
 .arc:hover {
@@ -103,6 +105,18 @@ body,
 	background: #cccccc;
 }
 
+/*--- slider class ---*/
+#slider {
+	position: fixed;
+	top: 29px;
+	left: 130px;
+	width: 300px;
+}
+#sliderlabel {
+	position: fixed;
+	top: 50px;
+	left: 200px;
+}
 
 /*--- switch button class ---*/
 .switch {
