@@ -38,37 +38,12 @@ const container = d3.select('#root'),
 let globalData,
 	hideMode = true
 
-d3.select("#applyModeCheckbox")
-	.on("change", function (e) {
-		const targetTagName = d3.event.target
-		hideMode = targetTagName.checked
-
-		const selectedMovie = d3.selectAll('.selected.rect')
-			.data()
-			.map(d => d.Movie)
-
-		if (selectedMovie.length === 0)
-			return
-
-		const movies = globalData.filter(d =>
-			selectedMovie.includes(d.Movie)
-		)
-
-		selectMovie(movies)
-
-	})
-
-const svg = container.append('svg')
+const svg = d3.select('#root').append('svg')
 	.attr('class', 'svg-content-responsive')
 	.attr('preserveAspectRatio', 'xMinYMin meet')
-	.attr('viewBox', `0 0 ${C.width} ${C.height}`)
-	.attr("font-size", 10)
-	.attr("font-family", "sans-serif")
-	.attr("text-anchor", "middle")
+	.attr('viewBox', `0 0 600 320`)
 	.on('click', function (e) {
-		const targetTagName = d3.event.target.tagName
-
-		if (targetTagName !== 'svg')
+		if (d3.event.target.tagName !== 'svg')
 			return
 
 		svg.selectAll('.selected')
@@ -81,77 +56,96 @@ const svg = container.append('svg')
 
 d3.text('data/data2.csv').then(response => {
 	const data = d3.csvParse(response)
-	globalData = data
-	drawFilmChart(data)
-	drawDurationChart(data)
-	drawDirectorChart(data)
-	useSlider(data)
-})
 
-function useSlider(data) {
-	const durationData = unique(data.map(d => d.Duration)),
-		max = d3.max(data, d => +d.Duration),
-		min = d3.min(data, d => +d.Duration)
 
-	const slider = document.getElementById('slider')
-	noUiSlider.create(slider, {
-		start: [min, max],
-		connect: true,
-		range: {
-			'min': min,
-			'max': max
-		}
-	})
-	slider.noUiSlider.on('update', function () {
-		const fromNode = document.querySelector('#from'),
-			toNode = document.querySelector('#to')
-		const value = slider.noUiSlider.get(),
-			min = +value[0],
-			max = +value[1]
+	//show Movie circle
+	const width = 310,
+		height = 310,
+		radius = Math.min(width, height) / 2
 
-		fromNode.innerText = min
-		toNode.innerText = max
+	const circle = svg.append('g')
+		.attr("transform", "translate(" + (5 + width / 2) + "," + (5 + height / 2) + ")")
+		.append('g')
+		.attr('id', "circle")
 
-		const movies = globalData.filter(d =>
-			d.Duration < min || d.Duration > max
-		)
+	const pie = d3.pie()
+		.sort(null)
+		.value(d => 1)
 
-		//display all
-		d3.selectAll('.notDisplay')
-			.classed("notDisplay", false)
+	const arc = d3.arc()
+		.outerRadius(radius)
+		.innerRadius(radius * 0.7)
 
-		movies.forEach(movie => {
+	const arc2 = d3.arc()
+		.outerRadius(radius)
+		.innerRadius(radius)
 
-			//movie hide
-			const movieID = getIdByName(movie.Movie)
-			d3.select('#'+movieID)
-				.classed("notDisplay", true)
-
-			//director hide
-			const allMivieDirector = globalData.filter(d =>
-				d.Director === movie.Director
-			)
-			const directorMovies = allMivieDirector.filter(d =>
-				d.Duration >= min && d.Duration <= max
-			)
-			if (directorMovies.length === 0) {
-				const directorID = getIdByName(movie.Director)
-				d3.select('#'+directorID)
-					.classed("notDisplay", true)
-			}
-
-			//duration hide
-			const durationID = getIdByName(movie.Duration)
-			d3.select('#'+durationID)
-				.classed('notDisplay', true)
-
+	//add pieChart
+	const pieChart = circle
+		.selectAll('.arc')
+		.data(pie(data))
+		.enter()
+		.append('g')
+		.attr('class', 'arc')
+		.attr('id', d => getIdByName(d.data.movie_title))
+		.on('click', function (e) {
+			// if (d3.select(this).classed('hide'))
+			// 	return
+			//
+			// //what already select?
+			// const alreadySelected = d3.selectAll('.selected.arc')
+			// 	.data()
+			// 	.map(d => d.data)
+			//
+			// //that node already selected?
+			// const directorName = e.data,
+			// 	include = alreadySelected.indexOf(directorName),
+			// 	willSelect = (include < 0) ?
+			// 		alreadySelected.concat(directorName) :
+			// 		[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
+			//
+			//
+			// const movies = globalData.filter(d =>
+			// 	willSelect.includes(d.Director)
+			// )
+			//
+			// /*-- select --*/
+			// selectMovie(movies)
 		})
 
+	pieChart.append('path')
+		.attr("fill", "#bf5600")
+		.attr("stroke-width", "1px")
+		.attr("stroke", "white")
+		.attr('d', arc)
 
-	})
-}
+	// Now add the annotation. Use the centroid method to get the best coordinates
+	pieChart.append('text')
+		.attr("dy", ".2em")
+		.attr("dx", d => {
+			const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
+			const result = angle > 180 ? 0.2 : -6.4
+			return result + "em"
+		})
+		.text(d => {
+			const text = d.data.movie_title.length > 18 ?
+				(d.data.movie_title.slice(0, 15) + '..') :
+				d.data.movie_title
+			return text
+		})
+		.attr("transform", d => {
+			const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
+			return "translate(" + arc2.centroid(d) + ") "
+				+ "rotate(" + (angle > 180 ? angle + 90 : angle - 90) + ")"
+		})
+		.style("text-anchor", "start")
+		.attr("font-family", "sans-serif")
+		.style("font-size", 7)
+})
 
-function drawDirectorChart(data) {
+
+
+const showMovieCirlce = movie => {
 	const width = C.directorChart.width,
 		height = C.directorChart.height,
 		radius = Math.min(width, height) / 2,
