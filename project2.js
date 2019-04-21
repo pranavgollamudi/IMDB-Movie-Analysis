@@ -32,8 +32,7 @@ const C = {
 
 
 
-const container = d3.select('#root'),
-	tooltipCont = d3.select('#tooltip')
+const tooltipCont = d3.select('#tooltip')
 
 let globalData,
 	hideMode = true
@@ -141,6 +140,77 @@ d3.text('data/data2.csv').then(response => {
 		.style("text-anchor", "start")
 		.attr("font-family", "sans-serif")
 		.style("font-size", 7)
+
+
+	/*  -- show  rating --  */
+	const newData = unique(data.map(d => d.imdb_score))
+	const dataset = {
+		children: newData
+	}
+
+	const color = d3.scaleOrdinal(newData, d3.schemeCategory10)
+
+	const ratingGraph = svg.append('g')
+		.attr('id', 'ratingGraph')
+		.attr("transform", "translate(" + 65 + "," + 65 + ")")
+
+	const bubble = d3.pack(dataset)
+		.size([200, 200])
+		.padding(10)
+
+	const nodes = d3.hierarchy(dataset)
+		.sum(d => d)
+
+	// bubbles
+	const node = ratingGraph.selectAll(".score")
+		.data(bubble(nodes).descendants())
+		.enter()
+		.filter(function(d){
+			return  !d.children
+		})
+		.append("g")
+		.attr("class", "score")
+		.attr('id', d => getIdByName(d.data))
+		.attr("transform", function(d) {
+			return "translate(" + d.x + "," + d.y + ")"
+		})
+		.on('click', function (e) {
+			// if (d3.select(this).classed('hide'))
+			// 	return
+			//
+			// //what already select?
+			// const alreadySelected = d3.selectAll('.selected.node')
+			// 	.data()
+			// 	.map(d => d.data)
+			//
+			// //that node already selected?
+			// const duration = e.data,
+			// 	include = alreadySelected.indexOf(duration),
+			// 	willSelect = (include < 0) ?
+			// 		alreadySelected.concat(duration) :
+			// 		[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
+			//
+			// const movies = globalData.filter(d =>
+			// 	willSelect.includes(d.Duration)
+			// )
+			//
+			// /*-- select --*/
+			// selectMovie(movies)
+		})
+
+	node.append("circle")
+		.attr("r", d => d.r)
+		.style("fill", d => color(d.data))
+
+	// header, title
+	node.append("text")
+		.attr("dy", ".3em")
+		.style("text-anchor", "middle")
+		.text(d => d.data )
+		.attr("font-family", "sans-serif")
+		.attr("font-size", d => d.r/1.2)
+		.attr("fill", "white")
+
 })
 
 
