@@ -56,7 +56,6 @@ const svg = d3.select('#root').append('svg')
 d3.text('data/data2.csv').then(response => {
 	const data = d3.csvParse(response)
 
-
 	//show Movie circle
 	const width = 310,
 		height = 310,
@@ -143,11 +142,11 @@ d3.text('data/data2.csv').then(response => {
 
 
 	/*  -- show  rating --  */
+
 	const newData = unique(data.map(d => d.imdb_score))
 	const dataset = {
 		children: newData
 	}
-
 	const color = d3.scaleOrdinal(newData, d3.schemeCategory10)
 
 	const ratingGraph = svg.append('g')
@@ -211,6 +210,87 @@ d3.text('data/data2.csv').then(response => {
 		.attr("font-size", d => d.r/1.2)
 		.attr("fill", "white")
 
+
+	/*  -- show  budget --  */
+
+	const iniqBudget = unique(data.map(d => d.budget))
+	const datasetBudget = {
+		children: iniqBudget
+	}
+	const color2 = d3.scaleOrdinal(iniqBudget, d3.schemeCategory10)
+
+	const budgetGraph = svg.append('g')
+		.attr('id', 'budjetGraph')
+		.attr("transform", "translate(" + 320 + "," + 20 + ")")
+
+	const bubbleBudget = d3.pack(datasetBudget)
+		.size([300, 300])
+		.padding(10)
+
+	const nodesBudget = d3.hierarchy(datasetBudget)
+		.sum(d => d)
+
+	// bubbles
+	const nodeBudget = budgetGraph.selectAll(".budget")
+		.data( bubbleBudget(nodesBudget).descendants())
+		.enter()
+		.filter(function(d){
+			return  !d.children
+		})
+		.append("g")
+		.attr("class", "budget")
+		.attr('id', d => getIdByName(d.data))
+		.attr("transform", function(d) {
+			return "translate(" + d.x + "," + d.y + ")"
+		})
+		.on('click', function (e) {
+			// if (d3.select(this).classed('hide'))
+			// 	return
+			//
+			// //what already select?
+			// const alreadySelected = d3.selectAll('.selected.node')
+			// 	.data()
+			// 	.map(d => d.data)
+			//
+			// //that node already selected?
+			// const duration = e.data,
+			// 	include = alreadySelected.indexOf(duration),
+			// 	willSelect = (include < 0) ?
+			// 		alreadySelected.concat(duration) :
+			// 		[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
+			//
+			// const movies = globalData.filter(d =>
+			// 	willSelect.includes(d.Duration)
+			// )
+			//
+			// /*-- select --*/
+			// selectMovie(movies)
+		})
+
+	nodeBudget.append("circle")
+		.attr("r", d => d.r)
+		.style("fill", d => color2(d.data))
+
+	// header, title
+	nodeBudget.append("text")
+		.attr("dy", ".0em")
+		.style("text-anchor", "middle")
+		.text(d => {
+			const roundBudget = d.data/1000000
+
+			return roundBudget
+		})
+		.attr("font-family", "sans-serif")
+		.attr("font-size", d => d.r/1.5)
+		.attr("fill", "black")
+
+	nodeBudget.append("text")
+		.attr("dy", "1.0em")
+		.style("text-anchor", "middle")
+		.text("million")
+		.attr("font-family", "sans-serif")
+		.attr("font-size", d => d.r/2)
+		.attr("fill", "black")
 })
 
 
