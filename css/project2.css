@@ -13,7 +13,7 @@ body,
 	align-items: center;
 }
 
-.svg-content-responsive {
+.svg {
 	width: 100%;
 	max-width: 1100px;
 	border: 3px solid #295fff;
@@ -31,15 +31,6 @@ body,
 .dot.transparent {
 	opacity: 0.9;
 }
-
-/*.arc.hide,*/
-/*.rect.hide,*/
-/*.node.hide circle,*/
-/*.arc.hide:hover,*/
-/*.rect.hide:hover,*/
-/*.node.hide:hover circle{*/
-	/*opacity: 0;*/
-/*}*/
 
 .arc.selected,
 .arc:hover {

@@ -1,19 +1,3 @@
-const svg = d3.select('#root').append('svg')
-	.attr('class', 'svg-content-responsive')
-	.attr('preserveAspectRatio', 'xMinYMin meet')
-	.attr('viewBox', `0 0 600 320`)
-	.on('click', function (e) {
-		if (d3.event.target.tagName !== 'svg')
-			return
-
-		svg.selectAll('.selected')
-			.classed('selected', false)
-
-		svg.selectAll('.dot, .budget, .arc')
-			.classed('hide', false)
-			.classed('transparent', false)
-	})
-
 d3.text('data/data2.csv').then(response => {
 	const data = d3.csvParse(response)
 	const colorLiner = d3.scaleLinear()
@@ -65,7 +49,7 @@ d3.text('data/data2.csv').then(response => {
 				willSelect.includes(d.movie_title)
 			)
 
-			selectMovie(movies)
+			selectThis(movies)
 		})
 
 	pieChart.append('path')
@@ -144,14 +128,13 @@ d3.text('data/data2.csv').then(response => {
 				willSelect.includes(d.budget)
 			)
 
-			selectMovie(movies)
+			selectThis(movies)
 		})
 
 	nodeBudget.append("circle")
 		.attr("r", d => d.r)
 		.style("fill", d => color2(d.data))
 
-	// header, title
 	nodeBudget.append("text")
 		.attr("dy", ".0em")
 		.style("text-anchor", "middle")
@@ -254,7 +237,7 @@ d3.text('data/data2.csv').then(response => {
 				willSelect.includes(d.imdb_score)
 			)
 
-			selectMovie(movies)
+			selectThis(movies)
 		})
 
 	chartRating
@@ -285,27 +268,24 @@ function unique (arr) {
 	return Object.keys(obj)
 }
 
-function selectMovie (movies = []) {
-	/*-deselect and hide all*/
+const selectThis = (movies) => {
 	d3.selectAll('.selected')
 		.classed("selected", false)
 
 	d3.selectAll('.budget, .dot, .arc')
-		.classed("hide", true && hideMode)
 		.classed('transparent', true)
 
-	/*-- select --*/
 	movies.forEach(movie => {
 
 		//movie select
-		const movieID = getIdByName(movie.movie_title)
+		const movieID = movie.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 		d3.select('#'+movieID)
 			.classed("selected", true)
 			.classed("hide", false)
 			.classed('transparent', false)
 
 		//budget select
-		const budgetID = getIdByName(movie.budget),
+		const budgetID = movie.budget.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''),
 			budgetNode = d3.select('#'+budgetID)
 
 		budgetNode
@@ -314,7 +294,7 @@ function selectMovie (movies = []) {
 			.classed('transparent', false)
 
 		//score select
-		const scoreID = getIdByName(movie.imdb_score)
+		const scoreID = movie.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 		d3.select('#'+scoreID)
 			.classed("selected", true)
 			.classed("hide", false)
@@ -322,6 +302,21 @@ function selectMovie (movies = []) {
 
 	})
 }
+
+const svg = d3.select('#root').append('svg')
+	.attr('class', 'svg')
+	.attr('preserveAspectRatio', 'xMinYMin meet')
+	.attr('viewBox', `0 0 600 320`)
+	.on('click', function (e) {
+		if (d3.event.target.tagName === 'svg') {
+			svg.selectAll('.selected')
+				.classed('selected', false)
+
+			svg.selectAll('.dot, .budget, .arc')
+				.classed('hide', false)
+				.classed('transparent', false)
+		}
+	})
 
 
 
