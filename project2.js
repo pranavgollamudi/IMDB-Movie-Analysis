@@ -276,7 +276,7 @@ d3.text('data/data2.csv').then(response => {
 
 	//-- circle --
 
-	chartRating.selectAll('dot')
+	chartRating.selectAll('.dot')
 		.data(dataScore)
 		.enter()
 		.append('circle')
@@ -286,6 +286,29 @@ d3.text('data/data2.csv').then(response => {
 		.attr('cy', (d) => yScale(d.averageBudget))
 		.attr('r', 7)
 		.attr('fill', d => color3(d.imdb_score))
+		.on('click', function (e) {
+			if (d3.select(this).classed('hide'))
+				return
+
+			//what already select?
+			const alreadySelected = d3.selectAll('.dot.selected')
+				.data()
+				.map(d => d.imdb_score)
+
+			//that node already selected?
+			const score = e.imdb_score,
+				include = alreadySelected.indexOf(score),
+				willSelect = (include < 0) ?
+					alreadySelected.concat(score) :
+					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
+
+			const movies = data.filter(d =>
+				willSelect.includes(d.imdb_score)
+			)
+
+			/*-- select --*/
+			selectMovie(movies)
+		})
 
 	// Axis labels
 	chartRating
