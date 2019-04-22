@@ -1,41 +1,5 @@
-const C = {
-	height: 500,
-	width: 850,
-	padding: 35,
-	chartFilm: {
-		id: 'chartFilmChart',
-		height: 180,
-	},
-	durationChart: {
-		id: 'durationChart',
-		height: 320,
-		width: 450,
-	},
-	directorChart: {
-		id: 'directorChart',
-		height: 240,
-		width: 365,
-	},
-	colors: [
-		'#a50026',
-		'#d73027',
-		'#f46d43',
-		'#fdae61',
-		'#fee08b',
-		'#d9ef8b',
-		'#a6d96a',
-		'#66bd63',
-		'#1a9850',
-		'#006837',
-	]
-}
 
-
-
-const tooltipCont = d3.select('#tooltip')
-
-let globalData,
-	hideMode = false
+let hideMode = false
 
 const svg = d3.select('#root').append('svg')
 	.attr('class', 'svg-content-responsive')
@@ -55,14 +19,20 @@ const svg = d3.select('#root').append('svg')
 
 d3.text('data/data2.csv').then(response => {
 	const data = d3.csvParse(response)
+	var colorLiner = d3.scaleLinear()
+		.domain([4, 6, 8])
+		.range(['#d73027', '#fee529', '#3de100'])
+		.interpolate(d3.interpolateHcl); //interpolateHsl interpolateHcl interpolateRgb
+
+	d3.select("body").append("h3").html("From red to green - 3 colors interpolation")
 
 	//show Movie circle
-	const width = 200,
-		height = 200,
+	const width = 220,
+		height = 220,
 		radius = Math.min(width, height) / 2
 
 	const circle = svg.append('g')
-		.attr("transform", "translate(" + (40 + width / 2) + "," + (15 + height / 2) + ")")
+		.attr("transform", "translate(" + (180 + width / 2) + "," + (12 + height / 2) + ")")
 		.append('g')
 		.attr('id', "circle")
 
@@ -112,7 +82,7 @@ d3.text('data/data2.csv').then(response => {
 		})
 
 	pieChart.append('path')
-		.attr("fill", "#bf5600")
+		.attr("fill", d => colorLiner(d.data.imdb_score))
 		.attr("stroke-width", "1px")
 		.attr("stroke", "white")
 		.attr('d', arc)
@@ -122,12 +92,12 @@ d3.text('data/data2.csv').then(response => {
 		.attr("dy", ".2em")
 		.attr("dx", d => {
 			const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
-			const result = angle > 180 ? 0.2 : -5.4
+			const result = angle > 180 ? 0.2 : -6.0
 			return result + "em"
 		})
 		.text(d => {
-			const text = d.data.movie_title.length > 18 ?
-				(d.data.movie_title.slice(0, 15) + '..') :
+			const text = d.data.movie_title.length > 12 ?
+				(d.data.movie_title.slice(0, 10) + '..') :
 				d.data.movie_title
 			return text
 		})
@@ -151,11 +121,11 @@ d3.text('data/data2.csv').then(response => {
 
 	const budgetGraph = svg.append('g')
 		.attr('id', 'budgetGraph')
-		.attr("transform", "translate(" + 300 + "," + 5 + ")")
+		.attr("transform", "translate(" + 220 + "," + 50 + ")")
 
 	const bubbleBudget = d3.pack(datasetBudget)
-		.size([300, 230])
-		.padding(10)
+		.size([140, 140])
+		.padding(7)
 
 	const nodesBudget = d3.hierarchy(datasetBudget)
 		.sum(d => d)
@@ -228,10 +198,16 @@ d3.text('data/data2.csv').then(response => {
 	const iniqScore = unique(data.map(d => d.imdb_score))
 
 	const dataScore = iniqScore.map(imdb_score => {
-		const movies = data.filter(movie => movie.imdb_score === imdb_score),
-			averageBudget = movies.reduce((accumulator, currentValue) => {
-				return +currentValue.budget + accumulator
-			}, 0) / movies.length
+		const movies = data.filter(movie => movie.imdb_score === imdb_score)
+		let valMovies = movies.length
+		const averageBudget = movies.reduce((accumulator, currentValue, index) => {
+			let budget = +currentValue.budget
+			if (!currentValue.budget) {
+				budget = 0
+				valMovies -= 1
+			}
+			return budget + accumulator
+		}, 0) / valMovies
 		 return {
 			 imdb_score,
 			 averageBudget
@@ -285,7 +261,7 @@ d3.text('data/data2.csv').then(response => {
 		.attr('cx', (d) => xScale(d.imdb_score))
 		.attr('cy', (d) => yScale(d.averageBudget))
 		.attr('r', 7)
-		.attr('fill', d => color3(d.imdb_score))
+		.attr('fill', d => colorLiner(d.imdb_score))
 		.on('click', function (e) {
 			if (d3.select(this).classed('hide'))
 				return
