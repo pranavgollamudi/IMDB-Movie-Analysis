@@ -174,27 +174,27 @@ d3.text('data/data2.csv').then(response => {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
 		.on('click', function (e) {
-			// if (d3.select(this).classed('hide'))
-			// 	return
-			//
-			// //what already select?
-			// const alreadySelected = d3.selectAll('.selected.node')
-			// 	.data()
-			// 	.map(d => d.data)
-			//
-			// //that node already selected?
-			// const duration = e.data,
-			// 	include = alreadySelected.indexOf(duration),
-			// 	willSelect = (include < 0) ?
-			// 		alreadySelected.concat(duration) :
-			// 		[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
-			//
-			// const movies = globalData.filter(d =>
-			// 	willSelect.includes(d.Duration)
-			// )
-			//
-			// /*-- select --*/
-			// selectMovie(movies)
+			if (d3.select(this).classed('hide'))
+				return
+
+			//what already select?
+			const alreadySelected = d3.selectAll('.budget.selected')
+				.data()
+				.map(d => d.data)
+
+			//that node already selected?
+			const budget = e.data,
+				include = alreadySelected.indexOf(budget),
+				willSelect = (include < 0) ?
+					alreadySelected.concat(budget) :
+					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
+
+			const movies = data.filter(d =>
+				willSelect.includes(d.budget)
+			)
+
+			/*-- select --*/
+			selectMovie(movies)
 		})
 
 	nodeBudget.append("circle")
