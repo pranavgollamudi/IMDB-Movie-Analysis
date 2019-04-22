@@ -1,6 +1,3 @@
-
-let hideMode = false
-
 const svg = d3.select('#root').append('svg')
 	.attr('class', 'svg-content-responsive')
 	.attr('preserveAspectRatio', 'xMinYMin meet')
@@ -19,12 +16,10 @@ const svg = d3.select('#root').append('svg')
 
 d3.text('data/data2.csv').then(response => {
 	const data = d3.csvParse(response)
-	var colorLiner = d3.scaleLinear()
+	const colorLiner = d3.scaleLinear()
 		.domain([4, 6, 8])
 		.range(['#d73027', '#fee529', '#3de100'])
 		.interpolate(d3.interpolateHcl); //interpolateHsl interpolateHcl interpolateRgb
-
-	d3.select("body").append("h3").html("From red to green - 3 colors interpolation")
 
 	//show Movie circle
 	const width = 220,
@@ -38,7 +33,7 @@ d3.text('data/data2.csv').then(response => {
 
 	const pie = d3.pie()
 		.sort(null)
-		.value(d => 1)
+		.value(d => 2)
 
 	const arc = d3.arc()
 		.outerRadius(radius)
@@ -48,36 +43,28 @@ d3.text('data/data2.csv').then(response => {
 		.outerRadius(radius)
 		.innerRadius(radius)
 
-	//add pieChart
 	const pieChart = circle
 		.selectAll('.arc')
 		.data(pie(data))
 		.enter()
 		.append('g')
 		.attr('class', 'arc')
-		.attr('id', d => getIdByName(d.data.movie_title))
+		.attr('id', d => d.data.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
 		.on('click', function (e) {
-			// if (d3.select(this).classed('hide'))
-			// 	return
-
-			//what already select?
 			const alreadySelected = d3.selectAll('.selected.arc')
 				.data()
 				.map(d => d.data.movie_title)
 
-			//that node already selected?
 			const movieName = e.data.movie_title,
 				include = alreadySelected.indexOf(movieName),
 				willSelect = (include < 0) ?
 					alreadySelected.concat(movieName) :
 					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
-
 			const movies = data.filter(d =>
 				willSelect.includes(d.movie_title)
 			)
 
-			/*-- select --*/
 			selectMovie(movies)
 		})
 
@@ -87,7 +74,6 @@ d3.text('data/data2.csv').then(response => {
 		.attr("stroke", "white")
 		.attr('d', arc)
 
-	// Now add the annotation. Use the centroid method to get the best coordinates
 	pieChart.append('text')
 		.attr("dy", ".2em")
 		.attr("dx", d => {
@@ -139,20 +125,15 @@ d3.text('data/data2.csv').then(response => {
 		})
 		.append("g")
 		.attr("class", "budget")
-		.attr('id', d => getIdByName(d.data))
+		.attr('id', d => d.data.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
 		.attr("transform", function(d) {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
 		.on('click', function (e) {
-			if (d3.select(this).classed('hide'))
-				return
-
-			//what already select?
 			const alreadySelected = d3.selectAll('.budget.selected')
 				.data()
 				.map(d => d.data)
 
-			//that node already selected?
 			const budget = e.data,
 				include = alreadySelected.indexOf(budget),
 				willSelect = (include < 0) ?
@@ -163,7 +144,6 @@ d3.text('data/data2.csv').then(response => {
 				willSelect.includes(d.budget)
 			)
 
-			/*-- select --*/
 			selectMovie(movies)
 		})
 
@@ -227,9 +207,6 @@ d3.text('data/data2.csv').then(response => {
 		.range([60, 0])
 		.domain(d3.extent(dataScore, d => d.averageBudget))
 
-	const color3 = d3.scaleOrdinal(dataScore.map(d => d.imdb_score), d3.schemeCategory10)
-
-	// -- axis ---
 	const axisX = d3.axisBottom(xScale)
 			.ticks(10),
 		axisY = d3.axisLeft(yScale)
@@ -249,14 +226,11 @@ d3.text('data/data2.csv').then(response => {
 		.duration(750)
 		.call(axisY)
 
-
-	//-- circle --
-
 	chartRating.selectAll('.dot')
 		.data(dataScore)
 		.enter()
 		.append('circle')
-		.attr('id', d => getIdByName(d.imdb_score))
+		.attr('id', d => d.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
 		.attr('class', 'dot')
 		.attr('cx', (d) => xScale(d.imdb_score))
 		.attr('cy', (d) => yScale(d.averageBudget))
@@ -266,12 +240,10 @@ d3.text('data/data2.csv').then(response => {
 			if (d3.select(this).classed('hide'))
 				return
 
-			//what already select?
 			const alreadySelected = d3.selectAll('.dot.selected')
 				.data()
 				.map(d => d.imdb_score)
 
-			//that node already selected?
 			const score = e.imdb_score,
 				include = alreadySelected.indexOf(score),
 				willSelect = (include < 0) ?
@@ -282,11 +254,9 @@ d3.text('data/data2.csv').then(response => {
 				willSelect.includes(d.imdb_score)
 			)
 
-			/*-- select --*/
 			selectMovie(movies)
 		})
 
-	// Axis labels
 	chartRating
 		.append('text')
 		.attr('x', 430)
@@ -304,9 +274,6 @@ d3.text('data/data2.csv').then(response => {
 
 })
 
-
-
-/* helper functions */
 function unique (arr) {
 	let obj = {}
 
@@ -356,10 +323,5 @@ function selectMovie (movies = []) {
 	})
 }
 
-function getIdByName (name) {
-	//remove space, (,),? and add random number
-	const id = 'i' + name.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
-	return id
-}
 
 
