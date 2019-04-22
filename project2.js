@@ -35,7 +35,7 @@ const C = {
 const tooltipCont = d3.select('#tooltip')
 
 let globalData,
-	hideMode = true
+	hideMode = false
 
 const svg = d3.select('#root').append('svg')
 	.attr('class', 'svg-content-responsive')
@@ -48,7 +48,7 @@ const svg = d3.select('#root').append('svg')
 		svg.selectAll('.selected')
 			.classed('selected', false)
 
-		svg.selectAll('.rect, .node, .arc')
+		svg.selectAll('.dot, .budget, .arc')
 			.classed('hide', false)
 			.classed('transparent', false)
 	})
@@ -89,26 +89,26 @@ d3.text('data/data2.csv').then(response => {
 		.on('click', function (e) {
 			// if (d3.select(this).classed('hide'))
 			// 	return
-			//
-			// //what already select?
-			// const alreadySelected = d3.selectAll('.selected.arc')
-			// 	.data()
-			// 	.map(d => d.data)
-			//
-			// //that node already selected?
-			// const directorName = e.data,
-			// 	include = alreadySelected.indexOf(directorName),
-			// 	willSelect = (include < 0) ?
-			// 		alreadySelected.concat(directorName) :
-			// 		[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
-			//
-			//
-			// const movies = globalData.filter(d =>
-			// 	willSelect.includes(d.Director)
-			// )
-			//
-			// /*-- select --*/
-			// selectMovie(movies)
+
+			//what already select?
+			const alreadySelected = d3.selectAll('.selected.arc')
+				.data()
+				.map(d => d.data.movie_title)
+
+			//that node already selected?
+			const movieName = e.data.movie_title,
+				include = alreadySelected.indexOf(movieName),
+				willSelect = (include < 0) ?
+					alreadySelected.concat(movieName) :
+					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
+
+
+			const movies = data.filter(d =>
+				willSelect.includes(d.movie_title)
+			)
+
+			/*-- select --*/
+			selectMovie(movies)
 		})
 
 	pieChart.append('path')
@@ -150,7 +150,7 @@ d3.text('data/data2.csv').then(response => {
 	const color2 = d3.scaleOrdinal(iniqBudget, d3.schemeCategory10)
 
 	const budgetGraph = svg.append('g')
-		.attr('id', 'budjetGraph')
+		.attr('id', 'budgetGraph')
 		.attr("transform", "translate(" + 300 + "," + 5 + ")")
 
 	const bubbleBudget = d3.pack(datasetBudget)
@@ -280,6 +280,7 @@ d3.text('data/data2.csv').then(response => {
 		.data(dataScore)
 		.enter()
 		.append('circle')
+		.attr('id', d => getIdByName(d.imdb_score))
 		.attr('class', 'dot')
 		.attr('cx', (d) => xScale(d.imdb_score))
 		.attr('cy', (d) => yScale(d.averageBudget))
@@ -306,290 +307,6 @@ d3.text('data/data2.csv').then(response => {
 
 
 
-const showMovieCirlce = movie => {
-	const width = C.directorChart.width,
-		height = C.directorChart.height,
-		radius = Math.min(width, height) / 2,
-		marginLeft = C.durationChart.width + C.padding,
-		dataset = unique(data.map(d => d.Director))
-
-	const color = d3.scaleOrdinal(dataset, d3.schemeCategory10)
-
-	const chartDirector = svg.append('g')
-		.attr("transform", "translate(" + (marginLeft + width / 2) + "," + (C.padding + height / 2) + ")")
-		.append('g')
-		.attr('id', C.directorChart.id)
-
-	const pie = d3.pie()
-		.sort(null)
-		.value(d => 1)
-
-	const arc = d3.arc()
-		.outerRadius(radius)
-		.innerRadius(radius * 0.3)
-
-	const arcLabel = d3.arc()
-		.outerRadius(radius)
-		.innerRadius(radius)
-
-	//add pieChart
-	const pieChart = chartDirector
-		.selectAll('.arc')
-		.data(pie(dataset))
-		.enter()
-		.append('g')
-		.attr('class', 'arc')
-		.attr('id', d => getIdByName(d.data))
-		.on('click', function (e) {
-			if (d3.select(this).classed('hide'))
-				return
-
-			//what already select?
-			const alreadySelected = d3.selectAll('.selected.arc')
-				.data()
-				.map(d => d.data)
-
-			//that node already selected?
-			const directorName = e.data,
-				include = alreadySelected.indexOf(directorName),
-				willSelect = (include < 0) ?
-					alreadySelected.concat(directorName) :
-					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
-
-
-			const movies = globalData.filter(d =>
-				willSelect.includes(d.Director)
-			)
-
-			/*-- select --*/
-			selectMovie(movies)
-		})
-
-	pieChart.append('path')
-		.attr("fill", (d) => color(d.data))
-		.attr('d', arc)
-
-	// Now add the annotation. Use the centroid method to get the best coordinates
-	pieChart.append('text')
-		.attr("dy", ".2em")
-		.attr("dx", d => d.data.length * 0.25 + 0.5 + "em")
-		.text(d => d.data)
-		.attr("transform", d =>
-			`translate(${arcLabel.centroid(d)}) rotate(${90 + (d.startAngle + d.endAngle) / 2 * 180 / Math.PI})`)
-		.style("text-anchor", "middle")
-		.style("font-size", radius/15)
-}
-
-function drawDurationChart(data) {
-	const newData = unique(data.map(d => d.Duration))
-	const dataset = {
-		children: newData
-	}
-
-	const width = C.durationChart.width,
-		height = C.durationChart.height
-
-	const color = d3.scaleOrdinal(newData, d3.schemeCategory10)
-
-	const chartDuration = svg.append('g')
-		.attr('id', C.durationChart.id)
-		//.attr("transform", "translate(" + C.padding + "," + C.padding + ")")
-
-	const bubble = d3.pack(dataset)
-		.size([width, height])
-		.padding(10)
-
-	const nodes = d3.hierarchy(dataset)
-		.sum(d => d)
-
-	// bubbles
-	const node = chartDuration.selectAll(".node")
-		.data(bubble(nodes).descendants())
-		.enter()
-		.filter(function(d){
-			return  !d.children
-		})
-		.append("g")
-		.attr("class", "node")
-		.attr('id', d => getIdByName(d.data))
-		.attr("transform", function(d) {
-			return "translate(" + d.x + "," + d.y + ")"
-		})
-		.on('click', function (e) {
-			if (d3.select(this).classed('hide'))
-				return
-
-			//what already select?
-			const alreadySelected = d3.selectAll('.selected.node')
-				.data()
-				.map(d => d.data)
-
-			//that node already selected?
-			const duration = e.data,
-				include = alreadySelected.indexOf(duration),
-				willSelect = (include < 0) ?
-					alreadySelected.concat(duration) :
-					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
-
-			const movies = globalData.filter(d =>
-				willSelect.includes(d.Duration)
-			)
-
-			/*-- select --*/
-			selectMovie(movies)
-		})
-
-	node.append("circle")
-		.attr("r", d => d.r)
-		.style("fill", d => color(d.data))
-
-	// header, title
-	node.append("text")
-		.attr("dy", ".2em")
-		.style("text-anchor", "middle")
-		.text(d => d.data )
-		.attr("font-family", "sans-serif")
-		.attr("font-size", d => d.r/2)
-		.attr("fill", "white")
-
-	node.append("text")
-		.attr("dy", "1.3em")
-		.style("text-anchor", "middle")
-		.text('min')
-		.attr("font-family", "sans-serif")
-		.attr("font-size", d => d.r/2)
-		.attr("fill", "white")
-}
-
-function drawFilmChart(data) {
-	const width = C.width,
-		height = C.chartFilm.height
-
-	const sortedData = data.sort((a, b) => {
-		return  +b.Rating - +a.Rating
-	})
-
-
-	const chartFilm = svg.append('g')
-		.attr('id', C.chartFilm.id)
-		.attr("transform", "translate(" + C.padding + "," + (C.height - height - C.padding) + ")")
-
-	const xScale = d3.scaleBand()
-			.range([0, width - C.padding*2])
-			.domain(sortedData.map(d => d.Movie))
-			.padding(0.1)
-
-	const xExtent = d3.extent(sortedData, d => parseFloat(d.Rating)),
-		minY = xExtent[0]-1 < 0 ? 0 : xExtent[0]-1,
-		maxY = xExtent[1]+1 > 10 ? 10 : xExtent[1]+1,
-		yScale = d3.scaleLinear()
-		.range([height - C.padding, 0])
-		.domain([minY, maxY])
-
-	const color = d3.scaleOrdinal(sortedData.map(d => d.Movie), d3.schemeCategory10)
-
-	// -- axis ---
-	const axisX = d3.axisBottom(xScale)
-			.ticks(null, 's'),
-			// .tickSize(1)
-		axisY = d3.axisLeft(yScale)
-			.tickFormat(d3.format(".0f"))
-
-	chartFilm.append("g")
-		.attr("class", "axisY")
-		.transition()
-		.duration(750)
-		.call(axisY)
-
-	//-- circle --
-
-	const rectCont = chartFilm.selectAll('rect')
-		.data(sortedData)
-		.enter()
-		.append("g")
-
-	rectCont.append("rect")
-		.attr('id', d => getIdByName(d.Movie))
-		.attr('class', "rect")
-		.attr("x", d => xScale(d.Movie))
-		.attr("y", d => yScale(d.Rating))
-		.attr("width", xScale.bandwidth())
-		.attr("height", d => yScale(minY) - yScale(d.Rating))
-		.attr('fill', d => color(d.Movie))
-		.on("mousemove", function(e) {
-			if (d3.select(this).classed('hide'))
-				return
-
-			const {
-				Movie,
-				Year,
-				Actor,
-				Language,
-				Duration } = e,
-				html = `
-					<div>
-						<span>${Movie},</span>
-						<span> ${Duration} min,</span><br>
-						<span>${Year},</span><br>
-						<span>${Actor},</span><br>
-						<span>${Language},</span><br>
-					</div>
-				`
-
-			tooltipCont.html(html)
-				.style("top", (d3.event.pageY+30) + "px")
-				.style("left", (d3.event.pageX+10 ) + "px")
-				.style("display", "flex");
-
-
-		})
-		.on("mouseout", function() {
-			tooltipCont.style("display", "none");
-		})
-		.on('click', function (e) {
-			if (d3.select(this).classed('hide'))
-				return
-
-			//what already select?
-			const alreadySelected = d3.selectAll('.selected.rect')
-				.data()
-				.map(d => d.Movie)
-
-			//that node already selected?
-			const movieName = e.Movie,
-				include = alreadySelected.indexOf(movieName),
-				willSelect = (include < 0) ?
-					alreadySelected.concat(movieName) :
-					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
-
-			const movies = globalData.filter(d =>
-				willSelect.includes(d.Movie)
-			)
-
-			selectMovie(movies)
-		})
-
-	rectCont.append('text')
-		.attr('class', 'movieName')
-		.attr("transform", d => "translate(" + (xScale(d.Movie) + 8) + "," + (yScale(minY) + 12) + ") rotate(-30)")
-		.text(d => {
-			let result = d.Movie
-			if (d.Movie.length > 20) {
-				result = d.Movie.slice(0,17) + '...'
-			}
-
-			return result
-		})
-
-
-	chartFilm.append("g")
-		.attr("class", "axisX")
-		.attr("transform", `translate(${0},${height - C.padding})`)
-		.transition()
-		.duration(750)
-		.call(axisX)
-}
-
 /* helper functions */
 function unique (arr) {
 	let obj = {}
@@ -607,7 +324,7 @@ function selectMovie (movies = []) {
 	d3.selectAll('.selected')
 		.classed("selected", false)
 
-	d3.selectAll('.node, .rect, .arc')
+	d3.selectAll('.budget, .dot, .arc')
 		.classed("hide", true && hideMode)
 		.classed('transparent', true)
 
@@ -615,35 +332,24 @@ function selectMovie (movies = []) {
 	movies.forEach(movie => {
 
 		//movie select
-		const movieID = getIdByName(movie.Movie)
+		const movieID = getIdByName(movie.movie_title)
 		d3.select('#'+movieID)
 			.classed("selected", true)
 			.classed("hide", false)
 			.classed('transparent', false)
 
-		//director select
-		const directorID = getIdByName(movie.Director),
-			directorNode = d3.select('#'+directorID),
-			directorData = directorNode.data()[0]
+		//budget select
+		const budgetID = getIdByName(movie.budget),
+			budgetNode = d3.select('#'+budgetID)
 
-		directorNode
+		budgetNode
 			.classed("selected", true)
 			.classed("hide", false)
 			.classed('transparent', false)
 
-		const pieChart = d3.select('#'+C.directorChart.id),
-			startAngle = directorData.startAngle,
-			endAngle = directorData.endAngle,
-			angle = 270 - (startAngle + endAngle) / 2 * 180 / Math.PI
-
-		pieChart
-			.transition()
-			.duration(750)
-			.attr('transform', `rotate(${angle})`)
-
-		//duration select
-		const durationID = getIdByName(movie.Duration)
-		d3.select('#'+durationID)
+		//score select
+		const scoreID = getIdByName(movie.imdb_score)
+		d3.select('#'+scoreID)
 			.classed("selected", true)
 			.classed("hide", false)
 			.classed('transparent', false)
@@ -657,14 +363,4 @@ function getIdByName (name) {
 	return id
 }
 
-function makeAbsoluteContext(element, svgDocument) {
-	return function(x,y) {
-		var offset = svgDocument.getBoundingClientRect();
-		var matrix = element.getScreenCTM();
-		return {
-			x: (matrix.a * x) + (matrix.c * y) + matrix.e - offset.left,
-			y: (matrix.b * x) + (matrix.d * y) + matrix.f - offset.top
-		};
-	};
-}
 
