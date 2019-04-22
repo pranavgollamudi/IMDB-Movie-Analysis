@@ -57,12 +57,12 @@ d3.text('data/data2.csv').then(response => {
 	const data = d3.csvParse(response)
 
 	//show Movie circle
-	const width = 310,
-		height = 310,
+	const width = 200,
+		height = 200,
 		radius = Math.min(width, height) / 2
 
 	const circle = svg.append('g')
-		.attr("transform", "translate(" + (5 + width / 2) + "," + (5 + height / 2) + ")")
+		.attr("transform", "translate(" + (40 + width / 2) + "," + (15 + height / 2) + ")")
 		.append('g')
 		.attr('id', "circle")
 
@@ -72,7 +72,7 @@ d3.text('data/data2.csv').then(response => {
 
 	const arc = d3.arc()
 		.outerRadius(radius)
-		.innerRadius(radius * 0.7)
+		.innerRadius(radius * 0.6)
 
 	const arc2 = d3.arc()
 		.outerRadius(radius)
@@ -122,7 +122,7 @@ d3.text('data/data2.csv').then(response => {
 		.attr("dy", ".2em")
 		.attr("dx", d => {
 			const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
-			const result = angle > 180 ? 0.2 : -6.4
+			const result = angle > 180 ? 0.2 : -5.4
 			return result + "em"
 		})
 		.text(d => {
@@ -141,76 +141,6 @@ d3.text('data/data2.csv').then(response => {
 		.style("font-size", 7)
 
 
-	/*  -- show  rating --  */
-
-	const newData = unique(data.map(d => d.imdb_score))
-	const dataset = {
-		children: newData
-	}
-	const color = d3.scaleOrdinal(newData, d3.schemeCategory10)
-
-	const ratingGraph = svg.append('g')
-		.attr('id', 'ratingGraph')
-		.attr("transform", "translate(" + 65 + "," + 65 + ")")
-
-	const bubble = d3.pack(dataset)
-		.size([200, 200])
-		.padding(10)
-
-	const nodes = d3.hierarchy(dataset)
-		.sum(d => d)
-
-	// bubbles
-	const node = ratingGraph.selectAll(".score")
-		.data(bubble(nodes).descendants())
-		.enter()
-		.filter(function(d){
-			return  !d.children
-		})
-		.append("g")
-		.attr("class", "score")
-		.attr('id', d => getIdByName(d.data))
-		.attr("transform", function(d) {
-			return "translate(" + d.x + "," + d.y + ")"
-		})
-		.on('click', function (e) {
-			// if (d3.select(this).classed('hide'))
-			// 	return
-			//
-			// //what already select?
-			// const alreadySelected = d3.selectAll('.selected.node')
-			// 	.data()
-			// 	.map(d => d.data)
-			//
-			// //that node already selected?
-			// const duration = e.data,
-			// 	include = alreadySelected.indexOf(duration),
-			// 	willSelect = (include < 0) ?
-			// 		alreadySelected.concat(duration) :
-			// 		[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
-			//
-			// const movies = globalData.filter(d =>
-			// 	willSelect.includes(d.Duration)
-			// )
-			//
-			// /*-- select --*/
-			// selectMovie(movies)
-		})
-
-	node.append("circle")
-		.attr("r", d => d.r)
-		.style("fill", d => color(d.data))
-
-	// header, title
-	node.append("text")
-		.attr("dy", ".3em")
-		.style("text-anchor", "middle")
-		.text(d => d.data )
-		.attr("font-family", "sans-serif")
-		.attr("font-size", d => d.r/1.2)
-		.attr("fill", "white")
-
-
 	/*  -- show  budget --  */
 
 	const iniqBudget = unique(data.map(d => d.budget))
@@ -221,10 +151,10 @@ d3.text('data/data2.csv').then(response => {
 
 	const budgetGraph = svg.append('g')
 		.attr('id', 'budjetGraph')
-		.attr("transform", "translate(" + 320 + "," + 20 + ")")
+		.attr("transform", "translate(" + 300 + "," + 5 + ")")
 
 	const bubbleBudget = d3.pack(datasetBudget)
-		.size([300, 300])
+		.size([300, 230])
 		.padding(10)
 
 	const nodesBudget = d3.hierarchy(datasetBudget)
@@ -291,6 +221,87 @@ d3.text('data/data2.csv').then(response => {
 		.attr("font-family", "sans-serif")
 		.attr("font-size", d => d.r/2)
 		.attr("fill", "black")
+
+
+	/*  -- show  rating --  */
+
+	const iniqScore = unique(data.map(d => d.imdb_score))
+
+	const dataScore = iniqScore.map(imdb_score => {
+		const movies = data.filter(movie => movie.imdb_score === imdb_score),
+			averageBudget = movies.reduce((accumulator, currentValue) => {
+				return +currentValue.budget + accumulator
+			}, 0) / movies.length
+		 return {
+			 imdb_score,
+			 averageBudget
+		 }
+	})
+
+	const chartRating = svg.append('g')
+		.attr('id', 'chartRating')
+		.attr("transform", "translate(100,240)")
+
+	const xExtent = d3.extent(dataScore, d => parseFloat(d.imdb_score)),
+		xScale = d3.scaleLinear()
+			.range([0, 400])
+			.domain([(xExtent[0]-0.1), (xExtent[1])+0.1])
+
+	const yScale = d3.scaleLinear()
+		.range([60, 0])
+		.domain(d3.extent(dataScore, d => d.averageBudget))
+
+	const color3 = d3.scaleOrdinal(dataScore.map(d => d.imdb_score), d3.schemeCategory10)
+
+	// -- axis ---
+	const axisX = d3.axisBottom(xScale)
+			.ticks(10),
+		axisY = d3.axisLeft(yScale)
+			.tickFormat(d3.format("~s"))
+			.ticks(5)
+
+	chartRating.append("g")
+		.attr("class", "axisX")
+		.attr("transform", `translate(${0},${60})`)
+		.transition()
+		.duration(750)
+		.call(axisX)
+
+	chartRating.append("g")
+		.attr("class", "axisY")
+		.transition()
+		.duration(750)
+		.call(axisY)
+
+
+	//-- circle --
+
+	chartRating.selectAll('dot')
+		.data(dataScore)
+		.enter()
+		.append('circle')
+		.attr('class', 'dot')
+		.attr('cx', (d) => xScale(d.imdb_score))
+		.attr('cy', (d) => yScale(d.averageBudget))
+		.attr('r', 7)
+		.attr('fill', d => color3(d.imdb_score))
+
+	// Axis labels
+	chartRating
+		.append('text')
+		.attr('x', 430)
+		.attr('y', 65)
+		.attr('text-anchor', 'middle')
+		.attr('font-size', '12px')
+		.text('imdb score')
+
+	chartRating
+		.append('text')
+		.attr('transform', 'translate(-40, 30) rotate(-90)')
+		.attr('text-anchor', 'middle')
+		.attr('font-size', '12px')
+		.text('average budget')
+
 })
 
 
