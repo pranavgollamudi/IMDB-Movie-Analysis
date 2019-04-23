@@ -33,7 +33,7 @@ d3.text('data/data2.csv').then(response => {
 		.enter()
 		.append('g')
 		.attr('class', 'arc')
-		.attr('id', d => d.data.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
+		.attr('id', d => 'i'+d.data.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
 		.on('click', function (e) {
 			const alreadySelected = d3.selectAll('.selected.arc')
 				.data()
@@ -83,33 +83,35 @@ d3.text('data/data2.csv').then(response => {
 
 	/*  -- show  budget --  */
 
-	const iniqBudget = unique(data.map(d => d.budget))
-	const datasetBudget = {
-		children: iniqBudget
-	}
+	const iniqBdgt = unique(data.map(d => d.budget))
+
+	const radScale = d3.scaleLinear()
+			.range([8, 12])
+			.domain(d3.extent(iniqBdgt, d => +d))
+
+	const iniqBudget = iniqBdgt
+		.map(d => {
+			return {
+				data: d,
+				x: (180 + width / 2),
+				y: (12 + height / 2),
+				r: radScale(d)
+			}
+		})
+
 	const color2 = d3.scaleOrdinal(iniqBudget, d3.schemeCategory10)
 
 	const budgetGraph = svg.append('g')
 		.attr('id', 'budgetGraph')
-		.attr("transform", "translate(" + 220 + "," + 50 + ")")
-
-	const bubbleBudget = d3.pack(datasetBudget)
-		.size([140, 140])
-		.padding(7)
-
-	const nodesBudget = d3.hierarchy(datasetBudget)
-		.sum(d => d)
+	const nodes = iniqBudget //bubbleBudget(nodesBudget).descendants()
 
 	// bubbles
 	const nodeBudget = budgetGraph.selectAll(".budget")
-		.data( bubbleBudget(nodesBudget).descendants())
+		.data(nodes)
 		.enter()
-		.filter(function(d){
-			return  !d.children
-		})
 		.append("g")
 		.attr("class", "budget")
-		.attr('id', d => d.data.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
+		.attr('id', d => 'i'+d.data.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
 		.attr("transform", function(d) {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
@@ -121,8 +123,8 @@ d3.text('data/data2.csv').then(response => {
 			const budget = e.data,
 				include = alreadySelected.indexOf(budget),
 				willSelect = (include < 0) ?
-					alreadySelected.concat(budget) :
-					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
+				alreadySelected.concat(budget) :
+				[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
 			const movies = data.filter(d =>
 				willSelect.includes(d.budget)
@@ -130,6 +132,50 @@ d3.text('data/data2.csv').then(response => {
 
 			selectThis(movies)
 		})
+
+
+
+	let simulation = d3.forceSimulation(nodes)
+		.force("charge", d3.forceManyBody().strength(1))
+		.force("center", d3.forceCenter((180 + width / 2) , (12 + height / 2)))
+		.force("collide", d3.forceCollide()
+			.strength(.5)
+			.radius(d => d.r + 2)
+			.iterations(1)
+		) // Force that avoids circle overlapping
+		.on('tick', d => {
+			budgetGraph.selectAll(".budget")
+				.attr("transform", function(d) {
+					return "translate(" + d.x + "," + d.y + ")"
+				})
+		})
+	let oldx, oldy
+	nodeBudget
+		.call(d3.drag() // call specific function when circle is dragged
+			.on("start", function(d) {
+				console.log('drag start')
+				if (!d3.event.active)
+					simulation.alpha(1).restart()
+				d.fx = d.x;
+				d.fy = d.y;
+				oldx = d.x
+				oldy = d.y
+			})
+			.on("drag", function(d) {
+				console.log('drag')
+				d.fx = d3.event.x;
+				d.fy = d3.event.y;
+			})
+			.on("end", function (d) {
+				console.log('drag end')
+				console.log(oldx === d.x)
+				console.log(oldx === d.y)
+				if (!d3.event.active && !(oldx === d.x || oldx === d.y) )
+					simulation.alpha(10)
+				d.fx = null;
+				d.fy = null;
+			})
+		)
 
 	nodeBudget.append("circle")
 		.attr("r", d => d.r)
@@ -213,7 +259,7 @@ d3.text('data/data2.csv').then(response => {
 		.data(dataScore)
 		.enter()
 		.append('circle')
-		.attr('id', d => d.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
+		.attr('id', d => 'i'+d.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
 		.attr('class', 'dot')
 		.attr('cx', (d) => xScale(d.imdb_score))
 		.attr('cy', (d) => yScale(d.averageBudget))
@@ -245,24 +291,26 @@ d3.text('data/data2.csv').then(response => {
 		.attr('x', 430)
 		.attr('y', 65)
 		.attr('text-anchor', 'middle')
-		.attr('font-size', '12px')
+		.attr('font-size', '10px')
 		.text('imdb score')
 
 	chartRating
 		.append('text')
 		.attr('transform', 'translate(-40, 30) rotate(-90)')
 		.attr('text-anchor', 'middle')
-		.attr('font-size', '12px')
+		.attr('font-size', '10px')
 		.text('average budget')
 
 })
 
-function unique (arr) {
+const unique = (arr) => {
 	let obj = {}
 
 	for (let i = 0; i < arr.length; i++) {
 		let str = arr[i]
-		obj[str] = true
+		if (str !== "") {
+			obj[str] = true
+		}
 	}
 
 	return Object.keys(obj)
@@ -278,14 +326,14 @@ const selectThis = (movies) => {
 	movies.forEach(movie => {
 
 		//movie select
-		const movieID = movie.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
+		const movieID = 'i'+movie.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 		d3.select('#'+movieID)
 			.classed("selected", true)
 			.classed("hide", false)
 			.classed('transparent', false)
 
 		//budget select
-		const budgetID = movie.budget.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''),
+		const budgetID = 'i'+movie.budget.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''),
 			budgetNode = d3.select('#'+budgetID)
 
 		budgetNode
@@ -294,7 +342,7 @@ const selectThis = (movies) => {
 			.classed('transparent', false)
 
 		//score select
-		const scoreID = movie.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
+		const scoreID = 'i' + movie.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 		d3.select('#'+scoreID)
 			.classed("selected", true)
 			.classed("hide", false)
