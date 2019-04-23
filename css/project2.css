@@ -71,3 +71,9 @@ body,
 	stroke-width: 2px;
 	stroke: black;
 }
+
+#description {
+	position: fixed;
+	right: 20px;
+	top: 20px;
+}

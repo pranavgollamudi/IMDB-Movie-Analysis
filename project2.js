@@ -1,33 +1,33 @@
 d3.text('data/data2.csv').then(response => {
-	const data = d3.csvParse(response)
-	const colorLiner = d3.scaleLinear()
+	let data = d3.csvParse(response)
+	let colorLiner = d3.scaleLinear()
 		.domain([4, 6, 8])
 		.range(['#d73027', '#fee529', '#3de100'])
 		.interpolate(d3.interpolateHcl); //interpolateHsl interpolateHcl interpolateRgb
 
 	//show Movie circle
-	const width = 220,
+	let width = 220,
 		height = 220,
 		radius = Math.min(width, height) / 2
 
-	const circle = svg.append('g')
+	let circle = svg.append('g')
 		.attr("transform", "translate(" + (180 + width / 2) + "," + (12 + height / 2) + ")")
 		.append('g')
 		.attr('id', "circle")
 
-	const pie = d3.pie()
+	let pie = d3.pie()
 		.sort(null)
 		.value(d => 2)
 
-	const arc = d3.arc()
+	let arc = d3.arc()
 		.outerRadius(radius)
 		.innerRadius(radius * 0.6)
 
-	const arc2 = d3.arc()
+	let arc2 = d3.arc()
 		.outerRadius(radius)
 		.innerRadius(radius)
 
-	const pieChart = circle
+	let pieChart = circle
 		.selectAll('.arc')
 		.data(pie(data))
 		.enter()
@@ -35,17 +35,17 @@ d3.text('data/data2.csv').then(response => {
 		.attr('class', 'arc')
 		.attr('id', d => 'i'+d.data.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''))
 		.on('click', function (e) {
-			const alreadySelected = d3.selectAll('.selected.arc')
+			let alreadySelected = d3.selectAll('.selected.arc')
 				.data()
 				.map(d => d.data.movie_title)
 
-			const movieName = e.data.movie_title,
+			let movieName = e.data.movie_title,
 				include = alreadySelected.indexOf(movieName),
 				willSelect = (include < 0) ?
 					alreadySelected.concat(movieName) :
 					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
-			const movies = data.filter(d =>
+			let movies = data.filter(d =>
 				willSelect.includes(d.movie_title)
 			)
 
@@ -61,18 +61,18 @@ d3.text('data/data2.csv').then(response => {
 	pieChart.append('text')
 		.attr("dy", ".2em")
 		.attr("dx", d => {
-			const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
-			const result = angle > 180 ? 0.2 : -6.0
+			let angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
+			let result = angle > 180 ? 0.2 : -6.0
 			return result + "em"
 		})
 		.text(d => {
-			const text = d.data.movie_title.length > 12 ?
+			let text = d.data.movie_title.length > 12 ?
 				(d.data.movie_title.slice(0, 10) + '..') :
 				d.data.movie_title
 			return text
 		})
 		.attr("transform", d => {
-			const angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
+			let angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI
 			return "translate(" + arc2.centroid(d) + ") "
 				+ "rotate(" + (angle > 180 ? angle + 90 : angle - 90) + ")"
 		})
@@ -83,13 +83,13 @@ d3.text('data/data2.csv').then(response => {
 
 	/*  -- show  budget --  */
 
-	const iniqBdgt = unique(data.map(d => d.budget))
+	let iniqBdgt = unique(data.map(d => d.budget))
 
-	const radScale = d3.scaleLinear()
+	let radScale = d3.scaleLinear()
 			.range([8, 12])
 			.domain(d3.extent(iniqBdgt, d => +d))
 
-	const iniqBudget = iniqBdgt
+	let iniqBudget = iniqBdgt
 		.map(d => {
 			return {
 				data: d,
@@ -99,14 +99,14 @@ d3.text('data/data2.csv').then(response => {
 			}
 		})
 
-	const color2 = d3.scaleOrdinal(iniqBudget, d3.schemeCategory10)
+	let color2 = d3.scaleOrdinal(iniqBudget, d3.schemeCategory10)
 
-	const budgetGraph = svg.append('g')
+	let budgetGraph = svg.append('g')
 		.attr('id', 'budgetGraph')
-	const nodes = iniqBudget //bubbleBudget(nodesBudget).descendants()
+	let nodes = iniqBudget //bubbleBudget(nodesBudget).descendants()
 
 	// bubbles
-	const nodeBudget = budgetGraph.selectAll(".budget")
+	let nodeBudget = budgetGraph.selectAll(".budget")
 		.data(nodes)
 		.enter()
 		.append("g")
@@ -116,17 +116,17 @@ d3.text('data/data2.csv').then(response => {
 			return "translate(" + d.x + "," + d.y + ")"
 		})
 		.on('click', function (e) {
-			const alreadySelected = d3.selectAll('.budget.selected')
+			let alreadySelected = d3.selectAll('.budget.selected')
 				.data()
 				.map(d => d.data)
 
-			const budget = e.data,
+			let budget = e.data,
 				include = alreadySelected.indexOf(budget),
 				willSelect = (include < 0) ?
 				alreadySelected.concat(budget) :
 				[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
-			const movies = data.filter(d =>
+			let movies = data.filter(d =>
 				willSelect.includes(d.budget)
 			)
 
@@ -185,7 +185,7 @@ d3.text('data/data2.csv').then(response => {
 		.attr("dy", ".0em")
 		.style("text-anchor", "middle")
 		.text(d => {
-			const roundBudget = d.data/1000000
+			let roundBudget = d.data/1000000
 
 			return roundBudget
 		})
@@ -204,12 +204,12 @@ d3.text('data/data2.csv').then(response => {
 
 	/*  -- show  rating --  */
 
-	const iniqScore = unique(data.map(d => d.imdb_score))
+	let iniqScore = unique(data.map(d => d.imdb_score))
 
-	const dataScore = iniqScore.map(imdb_score => {
-		const movies = data.filter(movie => movie.imdb_score === imdb_score)
+	let dataScore = iniqScore.map(imdb_score => {
+		let movies = data.filter(movie => movie.imdb_score === imdb_score)
 		let valMovies = movies.length
-		const averageBudget = movies.reduce((accumulator, currentValue, index) => {
+		let averageBudget = movies.reduce((accumulator, currentValue, index) => {
 			let budget = +currentValue.budget
 			if (!currentValue.budget) {
 				budget = 0
@@ -223,20 +223,20 @@ d3.text('data/data2.csv').then(response => {
 		 }
 	})
 
-	const chartRating = svg.append('g')
+	let chartRating = svg.append('g')
 		.attr('id', 'chartRating')
 		.attr("transform", "translate(100,240)")
 
-	const xExtent = d3.extent(dataScore, d => parseFloat(d.imdb_score)),
+	let xExtent = d3.extent(dataScore, d => parseFloat(d.imdb_score)),
 		xScale = d3.scaleLinear()
 			.range([0, 400])
 			.domain([(xExtent[0]-0.1), (xExtent[1])+0.1])
 
-	const yScale = d3.scaleLinear()
+	let yScale = d3.scaleLinear()
 		.range([60, 0])
 		.domain(d3.extent(dataScore, d => d.averageBudget))
 
-	const axisX = d3.axisBottom(xScale)
+	let axisX = d3.axisBottom(xScale)
 			.ticks(10),
 		axisY = d3.axisLeft(yScale)
 			.tickFormat(d3.format("~s"))
@@ -266,20 +266,17 @@ d3.text('data/data2.csv').then(response => {
 		.attr('r', 7)
 		.attr('fill', d => colorLiner(d.imdb_score))
 		.on('click', function (e) {
-			if (d3.select(this).classed('hide'))
-				return
-
-			const alreadySelected = d3.selectAll('.dot.selected')
+			let alreadySelected = d3.selectAll('.dot.selected')
 				.data()
 				.map(d => d.imdb_score)
 
-			const score = e.imdb_score,
+			let score = e.imdb_score,
 				include = alreadySelected.indexOf(score),
 				willSelect = (include < 0) ?
 					alreadySelected.concat(score) :
 					[...alreadySelected.slice(0, include), ...alreadySelected.slice(include + 1)]
 
-			const movies = data.filter(d =>
+			let movies = data.filter(d =>
 				willSelect.includes(d.imdb_score)
 			)
 
@@ -303,7 +300,7 @@ d3.text('data/data2.csv').then(response => {
 
 })
 
-const unique = (arr) => {
+let unique = (arr) => {
 	let obj = {}
 
 	for (let i = 0; i < arr.length; i++) {
@@ -316,7 +313,7 @@ const unique = (arr) => {
 	return Object.keys(obj)
 }
 
-const selectThis = (movies) => {
+let selectThis = (movies) => {
 	d3.selectAll('.selected')
 		.classed("selected", false)
 
@@ -326,32 +323,29 @@ const selectThis = (movies) => {
 	movies.forEach(movie => {
 
 		//movie select
-		const movieID = 'i'+movie.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
+		let movieID = 'i'+movie.movie_title.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 		d3.select('#'+movieID)
 			.classed("selected", true)
-			.classed("hide", false)
 			.classed('transparent', false)
 
 		//budget select
-		const budgetID = 'i'+movie.budget.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''),
+		let budgetID = 'i'+movie.budget.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', ''),
 			budgetNode = d3.select('#'+budgetID)
 
 		budgetNode
 			.classed("selected", true)
-			.classed("hide", false)
 			.classed('transparent', false)
 
 		//score select
-		const scoreID = 'i' + movie.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
+		let scoreID = 'i' + movie.imdb_score.replace(/\s|\(|\)|\?|\:|\-|\'|\"|\&|\./g, '', '')
 		d3.select('#'+scoreID)
 			.classed("selected", true)
-			.classed("hide", false)
 			.classed('transparent', false)
 
 	})
 }
 
-const svg = d3.select('#root').append('svg')
+let svg = d3.select('#root').append('svg')
 	.attr('class', 'svg')
 	.attr('preserveAspectRatio', 'xMinYMin meet')
 	.attr('viewBox', `0 0 600 320`)
@@ -361,10 +355,15 @@ const svg = d3.select('#root').append('svg')
 				.classed('selected', false)
 
 			svg.selectAll('.dot, .budget, .arc')
-				.classed('hide', false)
 				.classed('transparent', false)
 		}
 	})
 
 
+let textarea = document.querySelector('#description')
+textarea.value = localStorage.getItem("description")
+
+textarea.addEventListener('blur', e => {
+	localStorage.setItem("description", e.target.value);
+})
 
