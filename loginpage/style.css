@@ -1,0 +1,74 @@
+h2{
+background-color: #acd6ef;
+padding: 20px;
+text-align:center;
+
+
+}
+
+div.container{
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    top: 40%;
+    left: 50%;
+    margin-top: -130px;
+    margin-left: -200px;
+
+   
+}
+div.main{
+width: 300px;
+padding: 10px 50px 25px;
+
+border-radius: 10px;
+font-family: raleway;
+float:left;
+margin-top:50px;
+}
+input[type=text],input[type=password]   {
+    padding-left: 10px;
+    margin: 10px;
+    margin-top: 12px;
+    margin-left: 6px;
+    width: 290px;
+    height: 35px;
+    border: 1px solid #c7d0d2;
+    border-radius: 2px;
+    box-shadow: inset 0 1.5px 3px rgba(190, 190, 190, .4), 0 0 0 5px #f5f7f8;
+    
+
+    -webkit-transition: all .4s ease;
+    -moz-transition: all .4s ease;
+transition: all .4s ease;}
+
+label{
+color: black;
+background: white;
+font-size: 14px;
+font-weight: bold;
+}
+
+
+input[type=button]{
+ float:right;
+    
+    margin-right: 100px;
+    margin-top: 20px;
+    width: 80px;
+    height: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    background-color: #acd6ef; /*IE fallback*/
+    background-image: -moz-linear-gradient(top left 90deg, #acd6ef 0%, #6ec2e8 100%);
+    background-image: linear-gradient(top left 90deg, #acd6ef 0%, #6ec2e8 100%);
+    border-radius: 30px;
+    border: 1px solid #66add6;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .5);
+   
+}
+input[type=button]:hover{
+background-image: linear-gradient(to right, #009245, #FCEE21, #00A8C5, #D9E021);
+    box-shadow: 0 4px 15px 0 rgba(83, 176, 57, 0.75);
+}

@@ -1,0 +1,86 @@
+.youtube {
+    position: fixed;
+    bottom: 330px;
+    left: 810px;
+}
+
+
+.buttons {
+    position:fixed;
+	bottom: 70px;
+	left: 0;
+	height: 150px;
+	width: 100%;
+	display:grid;
+    justify-content:flex-end;
+	align-items:flex-end;
+}
+
+.button2 {
+    position:fixed;
+	bottom: 10px;
+	left: 0;
+	height: 150px;
+	width: 100%;
+	display:grid;
+    justify-content:flex-end;
+	align-items:flex-end;
+}
+
+.btns-hover {
+    width: 400px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    margin: 10px;
+    height: 45px;
+    text-align:center;
+    border: none;
+    background-size: 350% 100%;
+
+    border-radius: 50px;
+    
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+    background-image: linear-gradient(to right, #009245, #FCEE21, #00A8C5, #D9E021);
+
+}
+
+.btns-hover:hover {
+    background-position: 100% 0;
+    moz-transition: all .4s ease-in-out;
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+}
+
+.btn-hover {
+    width: 400px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    margin: 10px;
+    height: 45px;
+    text-align:center;
+    border: none;
+    background-size: 350% 100%;
+
+    border-radius: 50px;
+    
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+    background-image: linear-gradient(to right, #009245, #FCEE21, #00A8C5, #D9E021);
+
+}
+
+.btn-hover:hover {
+    background-position: 100% 0;
+    moz-transition: all .4s ease-in-out;
+    -o-transition: all .4s ease-in-out;
+    -webkit-transition: all .4s ease-in-out;
+    transition: all .4s ease-in-out;
+}

@@ -3,23 +3,38 @@
 <head>
 	<meta charset="UTF-8">
 	<link href="css/style.css" rel="stylesheet">
-	<link href="css/nouislider.min.css" rel="stylesheet">
-	<title>Duration/Rating of the movie”</title>
+	<title>Is the overall Gross value directly proportional to the IMDB
+		rating?</title>
 </head>
 <body>
+    <body background="movies.jpg"></body>
 <div id="root" ></div>
-<div id="tooltip" ></div>
-<label class="switch">
-	<input id="applyModeCheckbox" type="checkbox" checked>
-	<span class="slider round"></span>
-</label>
-<div id="slider"> </div>
-<div id="sliderlabel">
-	Duration from <span id="from"></span> to <span id="to"></span>
+<label for="description"><b>NOTES</b></label>
+<textarea id="description"
+		  name="description"
+		  rows="15" cols="50">
+
+</textarea>
+
+    
+    <div class="buttons">
+    <button class="btn-hover" onclick="window.location.reload()">Reset</button>
+     
 </div>
+    
+     <div class="button2">
+         
+    <button class="btns-hover" onclick="window.location.href='login.html'">Logout</button>
+    </div>
+    
+    
+    <div class="button3">
+         
+    <button class="btnss-hover" onclick="window.location.href='database.html'">Database</button>
+    </div>
+    
 <script src="js/d3.v5.min.js"></script>
-<script src="js/nouislider.min.js"></script>
 <script src="main.js"></script>
-</div>
+
 </body>
 </html>
